@@ -15,7 +15,12 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.POST("/register", controllers.Register)
+	users := router.Group("/users")
+	{
+		users.GET("/:userId", controllers.GetUser)
+		users.POST("/register", controllers.Register)
+		users.POST("/:userId/:location/:locationId", controllers.VisitNewLocation)
+	}
 
 	router.Run()
 }
