@@ -8,6 +8,23 @@ import (
 	"github.com/jhutchings99/trvled/models"
 )
 
+func GetPosts(c *gin.Context) {
+	// get all posts from database
+	var posts []models.Post
+	result := initializers.DB.Find(&posts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get posts",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, posts)
+}
+
 func CreatePost(c *gin.Context) {
 	// get logged in user from context
 	user, exists := c.Get("user")

@@ -29,6 +29,7 @@ func main() {
 
 	posts := router.Group("/posts")
 	{
+		posts.GET("/", controllers.GetPosts)
 		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
 	}
 
