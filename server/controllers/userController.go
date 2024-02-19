@@ -2,10 +2,14 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/jhutchings99/trvled/initializers"
 	"github.com/jhutchings99/trvled/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *gin.Context) {
@@ -24,10 +28,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// hash password with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to hash password",
+		})
+
+		return
+	}
+
 	// store in database
 	user := models.User{
 		Email:         body.Email,
-		Password:      body.Password,
+		Password:      string(hashedPassword),
 		Username:      body.Username,
 		USAVisited:    []string{},
 		GlobalVisited: []string{},
@@ -44,6 +58,70 @@ func Register(c *gin.Context) {
 
 	// respond
 	c.JSON(http.StatusOK, user)
+}
+
+func Login(c *gin.Context) {
+	// get email and password
+	var body struct {
+		Email    string
+		Password string
+	}
+
+	if c.Bind(&body) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to read body",
+		})
+
+		return
+	}
+
+	// get user from database with email
+	var user models.User
+	initializers.DB.First(&user, "email = ?", body.Email)
+
+	if user.ID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to login",
+		})
+
+		return
+	}
+
+	// compare given password with hashed
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to login",
+		})
+
+		return
+	}
+
+	// create JWT
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		// set subject to user id
+		"sub": user.ID,
+		// set expiration date for 30 days
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	jwtSecret := os.Getenv("JWT_SECRET")
+	tokenString, err := token.SignedString([]byte(jwtSecret))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to login",
+		})
+
+		return
+	}
+
+	// return JWT with cookie
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func GetUser(c *gin.Context) {

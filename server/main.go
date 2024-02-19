@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jhutchings99/trvled/controllers"
 	"github.com/jhutchings99/trvled/initializers"
+	"github.com/jhutchings99/trvled/middleware"
 )
 
 func init() {
@@ -17,9 +18,11 @@ func main() {
 
 	users := router.Group("/users")
 	{
-		users.GET("/:userId", controllers.GetUser)
 		users.POST("/register", controllers.Register)
-		users.POST("/:userId/:location/:locationId", controllers.VisitNewLocation)
+		users.POST("/login", controllers.Login)
+
+		users.GET("/:userId", controllers.GetUser)
+		users.POST("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
 	}
 
 	router.Run()
