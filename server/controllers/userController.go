@@ -215,3 +215,34 @@ func VisitNewLocation(c *gin.Context) {
 	// respond
 	c.JSON(http.StatusOK, user)
 }
+
+func GetUserPosts(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// get posts
+	var posts []models.Post
+	result = initializers.DB.Where("user_id = ?", user.ID).Find(&posts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find posts",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, posts)
+}

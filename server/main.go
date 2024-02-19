@@ -23,6 +23,8 @@ func main() {
 
 		users.GET("/:userId", controllers.GetUser)
 		users.POST("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
+
+		users.GET("/:userId/posts/", controllers.GetUserPosts)
 	}
 
 	posts := router.Group("/posts")
