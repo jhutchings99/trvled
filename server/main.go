@@ -32,6 +32,7 @@ func main() {
 		posts.GET("/", controllers.GetPosts)
 		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
 		posts.PATCH("/:postId/like", middleware.RequireAuth, controllers.LikeUnlikePost)
+		posts.DELETE("/:postId", middleware.RequireAuth, controllers.DeletePost)
 	}
 
 	router.Run()

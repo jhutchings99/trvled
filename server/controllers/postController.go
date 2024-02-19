@@ -133,3 +133,54 @@ func LikeUnlikePost(c *gin.Context) {
 	// respond
 	c.JSON(http.StatusOK, post)
 }
+
+func DeletePost(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
+	// get post id from params
+	postID := c.Param("postId")
+
+	// get post from database
+	var post models.Post
+	result := initializers.DB.First(&post, "id = ?", postID)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get post",
+		})
+
+		return
+	}
+
+	// check if user is owner of post
+	if post.UserID != user.(models.User).ID {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user is not owner of post",
+		})
+
+		return
+	}
+
+	// delete post from database
+	result = initializers.DB.Delete(&post)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to delete post",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, post)
+}
