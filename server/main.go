@@ -22,7 +22,7 @@ func main() {
 		users.POST("/login", controllers.Login)
 
 		users.GET("/:userId", controllers.GetUser)
-		users.POST("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
+		users.PATCH("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
 
 		users.GET("/:userId/posts/", controllers.GetUserPosts)
 	}
@@ -31,6 +31,7 @@ func main() {
 	{
 		posts.GET("/", controllers.GetPosts)
 		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
+		posts.PATCH("/:postId/like", middleware.RequireAuth, controllers.LikeUnlikePost)
 	}
 
 	router.Run()

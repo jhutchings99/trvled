@@ -172,9 +172,11 @@ func VisitNewLocation(c *gin.Context) {
 	if location == "usa" {
 		// check if state has been visited
 		visited := false
-		for _, id := range user.USAVisited {
+		index := -1
+		for i, id := range user.USAVisited {
 			if id == locationId {
 				visited = true
+				index = i
 				break
 			}
 		}
@@ -182,15 +184,19 @@ func VisitNewLocation(c *gin.Context) {
 		// add state to usa visited list
 		if !visited {
 			user.USAVisited = append(user.USAVisited, locationId)
+		} else {
+			user.USAVisited = append(user.USAVisited[:index], user.USAVisited[index+1:]...)
 		}
 	}
 
 	if location == "global" {
 		// check if country has been visited
 		visited := false
-		for _, id := range user.GlobalVisited {
+		index := -1
+		for i, id := range user.GlobalVisited {
 			if id == locationId {
 				visited = true
+				index = i
 				break
 			}
 		}
@@ -198,6 +204,8 @@ func VisitNewLocation(c *gin.Context) {
 		// add country to global visited list
 		if !visited {
 			user.GlobalVisited = append(user.GlobalVisited, locationId)
+		} else {
+			user.GlobalVisited = append(user.GlobalVisited[:index], user.GlobalVisited[index+1:]...)
 		}
 	}
 

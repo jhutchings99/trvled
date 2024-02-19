@@ -73,3 +73,63 @@ func CreatePost(c *gin.Context) {
 	// respond
 	c.JSON(http.StatusOK, post)
 }
+
+func LikeUnlikePost(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
+	// get post id from params
+	postID := c.Param("postId")
+
+	// get post from database
+	var post models.Post
+	result := initializers.DB.First(&post, "id = ?", postID)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get post",
+		})
+
+		return
+	}
+
+	// check if user has already liked post
+	liked := false
+	index := -1
+	for i, like := range post.Likes {
+		if like == user.(models.User).Email {
+			liked = true
+			index = i
+			break
+		}
+	}
+
+	// if liked remove like using index
+	if liked {
+		post.Likes = append(post.Likes[:index], post.Likes[index+1:]...)
+	} else {
+		post.Likes = append(post.Likes, user.(models.User).Email)
+	}
+
+	// update post in database
+	result = initializers.DB.Save(&post)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to like/unlike post",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, post)
+}
