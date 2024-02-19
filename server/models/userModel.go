@@ -12,4 +12,5 @@ type User struct {
 	Username      string         `json:"username"`
 	USAVisited    pq.StringArray `gorm:"type:text[]" json:"usaVisited"`
 	GlobalVisited pq.StringArray `gorm:"type:text[]" json:"globalVisited"`
+	Posts         []Post         `json:"posts"`
 }

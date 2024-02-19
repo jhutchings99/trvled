@@ -25,5 +25,10 @@ func main() {
 		users.POST("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
 	}
 
+	posts := router.Group("/posts")
+	{
+		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
+	}
+
 	router.Run()
 }
