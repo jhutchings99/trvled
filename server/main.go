@@ -30,9 +30,20 @@ func main() {
 	posts := router.Group("/posts")
 	{
 		posts.GET("/", controllers.GetPosts)
+		posts.GET("/:postId", controllers.GetPost)
+		posts.GET("/:postId/comments", controllers.GetPostComments)
 		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
+		posts.POST("/:postId/comment", middleware.RequireAuth, controllers.CreateCommentOnPost)
 		posts.PATCH("/:postId/like", middleware.RequireAuth, controllers.LikeUnlikePost)
 		posts.DELETE("/:postId", middleware.RequireAuth, controllers.DeletePost)
+	}
+
+	comments := router.Group("/comments")
+	{
+		comments.GET("/:commentId", controllers.GetComment)
+		comments.GET("/:commentId/comments", controllers.GetCommentComments)
+		comments.POST("/:commentId/comment", middleware.RequireAuth, controllers.CreateCommentOnComment)
+		comments.PATCH("/:commentId/like", middleware.RequireAuth, controllers.LikeUnlikeComment)
 	}
 
 	router.Run()

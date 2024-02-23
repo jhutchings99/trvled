@@ -25,6 +25,26 @@ func GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+func GetPost(c *gin.Context) {
+	// get post id from params
+	postID := c.Param("postId")
+
+	// get post from database
+	var post models.Post
+	result := initializers.DB.First(&post, "id = ?", postID)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get post",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, post)
+}
+
 func CreatePost(c *gin.Context) {
 	// get logged in user from context
 	user, exists := c.Get("user")
