@@ -1,3 +1,9 @@
+import Map from "./components/Map/Map";
+
 export default function Home() {
-  return <main className="">main page</main>;
+  return (
+    <main className="">
+      <Map />
+    </main>
+  );
 }
