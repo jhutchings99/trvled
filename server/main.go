@@ -46,5 +46,11 @@ func main() {
 		comments.PATCH("/:commentId/like", middleware.RequireAuth, controllers.LikeUnlikeComment)
 	}
 
+	memories := router.Group("/memories")
+	{
+		memories.GET("/:countryID", middleware.RequireAuth, controllers.GetCountryMemories)
+		memories.POST("/:countryID", middleware.RequireAuth, controllers.CreateMemory)
+	}
+
 	router.Run()
 }
