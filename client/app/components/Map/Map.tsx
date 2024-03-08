@@ -51,8 +51,8 @@ export default function Map() {
   return (
     // <div className="w-full h-[92vh] flex flex-col justify-center items-center">
     // <h3>{tooltipContent}</h3>
-    <div className="w-full max-w-screen max-h-[92vh] overflow-hidden bg-slate-700">
-      <ComposableMap projection="geoMercator">
+    <div className="w-full  overflow-hidden bg-slate-700">
+      <ComposableMap projection="geoMercator" className="h-screen w-full">
         <ZoomableGroup
           zoom={position.zoom}
           center={position.coordinates}
@@ -64,12 +64,15 @@ export default function Map() {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  onMouseEnter={() => {
-                    const { name } = geo.properties;
-                    setTooltipContent(`${name}`);
-                  }}
-                  onMouseLeave={() => {
-                    setTooltipContent("Not hovering");
+                  // onMouseEnter={() => {
+                  //   const { name } = geo.properties;
+                  //   setTooltipContent(`${name}`);
+                  // }}
+                  // onMouseLeave={() => {
+                  //   setTooltipContent("Not hovering");
+                  // }}
+                  onClick={() => {
+                    console.log(geo);
                   }}
                   className={`hover:fill-red-200 outline-none ${
                     geo.properties.visited ? "fill-red-500" : "fill-red-300"
