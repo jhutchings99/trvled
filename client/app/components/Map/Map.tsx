@@ -51,7 +51,7 @@ export default function Map() {
   return (
     // <div className="w-full h-[92vh] flex flex-col justify-center items-center">
     // <h3>{tooltipContent}</h3>
-    <div className="w-full  overflow-hidden bg-slate-700">
+    <div className="w-full  overflow-hidden relative border-r-[1px] border-black">
       <ComposableMap projection="geoMercator" className="h-screen w-full">
         <ZoomableGroup
           zoom={position.zoom}
@@ -74,8 +74,8 @@ export default function Map() {
                   onClick={() => {
                     console.log(geo);
                   }}
-                  className={`hover:fill-red-200 outline-none ${
-                    geo.properties.visited ? "fill-red-500" : "fill-red-300"
+                  className={`hover:fill-hover stroke-black outline-none ${
+                    geo.properties.visited ? "fill-primary" : "fill-secondary"
                   }`}
                 />
               ))
@@ -85,7 +85,7 @@ export default function Map() {
       </ComposableMap>
       {/* RECENTER BUTTON */}
       <MdFilterCenterFocus
-        className="fixed right-4 bottom-4 text-4xl cursor-pointer"
+        className="absolute right-8 bottom-8 text-4xl cursor-pointer"
         onClick={centerMap}
       />
     </div>
