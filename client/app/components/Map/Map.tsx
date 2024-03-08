@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   ComposableMap,
@@ -7,11 +8,12 @@ import {
   Geography,
   ZoomableGroup,
 } from "react-simple-maps";
-
 import WorldJSON from "./world.json";
 import { MdFilterCenterFocus } from "react-icons/md";
 
 export default function Map() {
+  const router = useRouter();
+
   const [tooltipContent, setTooltipContent] = useState("Not hovering");
   const [position, setPosition] = useState({
     coordinates: [0, 0] as [number, number],
@@ -73,6 +75,7 @@ export default function Map() {
                   // }}
                   onClick={() => {
                     console.log(geo);
+                    router.push(`/countries/${geo.id}`);
                   }}
                   className={`hover:fill-hover stroke-black outline-none ${
                     geo.properties.visited ? "fill-primary" : "fill-secondary"
