@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -121,7 +122,17 @@ func Login(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
 
-	c.JSON(http.StatusOK, gin.H{})
+	fmt.Println("Created JWT: ", tokenString)
+
+	// create user response with no sensitive data and the JWT
+	c.JSON(http.StatusOK, gin.H{
+		"id":            user.ID,
+		"email":         user.Email,
+		"username":      user.Username,
+		"usaVisited":    user.USAVisited,
+		"globalVisited": user.GlobalVisited,
+		"accessToken":   tokenString,
+	})
 }
 
 func GetUser(c *gin.Context) {

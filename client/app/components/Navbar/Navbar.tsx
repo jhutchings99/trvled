@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Logo from "../../../public/logo.svg";
 import ProfilePic from "../../../public/temp-fake-profile-img.jpg";
-
 import Image from "next/image";
 import {
   MdMap,
