@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import CreatePostForm from "../components/CreatePostForm/createPostForm";
 
@@ -35,7 +35,7 @@ export default function LoginForm() {
     return (
       <>
         <p>Signed in as {session.user.email}</p>
-        <button onClick={() => signIn()}>Sign out</button>
+        <button onClick={() => signOut()}>Sign out</button>
         <CreatePostForm />
       </>
     );

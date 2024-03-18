@@ -10,13 +10,9 @@ import {
 } from "react-simple-maps";
 import WorldJSON from "./world.json";
 import { MdFilterCenterFocus } from "react-icons/md";
-import { Tooltip } from "react-tooltip";
-import { useAppDispatch } from "@/app/store/hooks";
-import { setSelectedCountry } from "../../store/slice";
 
 export default function Map() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
 
   const [tooltipContent, setTooltipContent] = useState("Not hovering");
   const [position, setPosition] = useState({
@@ -58,7 +54,6 @@ export default function Map() {
     // <div className="w-full h-[92vh] flex flex-col justify-center items-center">
     // <h3>{tooltipContent}</h3>
     <div className="w-full  overflow-hidden relative border-r-[1px] border-black">
-      <Tooltip id="my-tooltip" />
       <ComposableMap projection="geoMercator" className="h-screen w-full">
         <ZoomableGroup
           zoom={position.zoom}
@@ -71,19 +66,17 @@ export default function Map() {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  onMouseEnter={() => {
-                    const { name } = geo.properties;
-                    setTooltipContent(`${name}`);
-                  }}
-                  onMouseLeave={() => {
-                    setTooltipContent("Not hovering");
-                  }}
+                  // onMouseEnter={() => {
+                  //   const { name } = geo.properties;
+                  //   setTooltipContent(`${name}`);
+                  // }}
+                  // onMouseLeave={() => {
+                  //   setTooltipContent("Not hovering");
+                  // }}
                   onClick={() => {
-                    dispatch(setSelectedCountry(geo));
+                    console.log(geo);
                     router.push(`/countries/${geo.id}`);
                   }}
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content={tooltipContent}
                   className={`hover:fill-hover stroke-black outline-none ${
                     geo.properties.visited ? "fill-primary" : "fill-secondary"
                   }`}

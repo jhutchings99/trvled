@@ -31,7 +31,6 @@ const handler = NextAuth({
         if (user) {
           // Any object returned will be saved in `user` property of the JWT
           console.log("User found", user);
-          console.log("Secret", process.env.NEXTAUTH_SECRET);
           return user;
         } else {
           // If you return null then an error will be displayed advising the user to check their details.
@@ -45,7 +44,6 @@ const handler = NextAuth({
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       return { ...token, ...user };

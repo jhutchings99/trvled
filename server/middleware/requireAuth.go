@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,7 @@ func RequireAuth(c *gin.Context) {
 		return
 	}
 
-	tokenString := strings.Split(authHeader, " ")[1]
+	tokenString := authHeader
 
 	// decode/validate cookie
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

@@ -1,12 +1,11 @@
+import LandingNavbar from "./components/LandingNavbar/LandingNavbar";
 import Navbar from "./components/Navbar/Navbar";
-import Component from "./components/Testing/test";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <main className="flex px-52">
+    <main className="flex flex-col px-52">
       <Navbar />
-      <Component />
-      <p>Home</p>
+      <p>Landing</p>
     </main>
   );
 }
