@@ -17,6 +17,7 @@ const config: Config = {
         primary: "#396306",
         secondary: "#E7D5A4",
         hover: "#548F0C",
+        blur: "rgba(0, 0, 0, 0.5)",
       },
     },
   },

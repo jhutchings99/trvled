@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 func RequireAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
+	log.Print("Auth header: ", authHeader)
 	if authHeader == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return

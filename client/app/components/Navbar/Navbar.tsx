@@ -20,7 +20,7 @@ export default function Navbar() {
             className="text-primary font-black uppercase text-4xl"
             href={"/"}
           >
-            trvled
+            trveld
           </Link>
         </div>
         <div className="flex flex-col gap-6 pt-8">

@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/jhutchings99/trvled/initializers"
 	"github.com/jhutchings99/trvled/models"
@@ -64,20 +67,45 @@ func CreateMemory(c *gin.Context) {
 
 	countryID := c.Param("countryID")
 
-	// get content, and location from body
-	var body struct {
-		Note string
-	}
+	// now using formdata to get note and image
+	note := c.PostForm("note")
 
-	if c.Bind(&body) != nil {
+	// TODO: store picture in cloudinary/s3 bucket and get url
+	file, err := c.FormFile("image")
+
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read body",
+			"error": "failed to read file",
 		})
 
 		return
 	}
 
-	// TODO: store picture in cloudinary/s3 bucket and get url
+	// save the file to s3
+	f, err := file.Open()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to read file",
+		})
+
+		return
+	}
+
+	uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String("trveld"),
+		Key:    aws.String(file.Filename),
+		Body:   f,
+		ACL:    "public-read",
+	})
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to upload file",
+		})
+
+		return
+	}
 
 	// store in database
 	countryIDUint, err := strconv.ParseUint(countryID, 10, 64)
@@ -91,7 +119,8 @@ func CreateMemory(c *gin.Context) {
 	memory := models.Memory{
 		UserID:    user.(models.User).ID,
 		CountryId: uint(countryIDUint),
-		Note:      body.Note,
+		ImageURL:  uploaderResult.Location,
+		Note:      note,
 	}
 
 	result := initializers.DB.Create(&memory)

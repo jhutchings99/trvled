@@ -14,10 +14,12 @@ func init() {
 	initializers.LoadEnvVariables()
 	initializers.ConnectToDb()
 	initializers.SyncDatabase()
+	initializers.S3BucketUploader()
 }
 
 func main() {
 	router := gin.Default()
+	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
