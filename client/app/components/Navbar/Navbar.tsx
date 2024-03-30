@@ -48,7 +48,7 @@ export default function Navbar() {
   function createPost() {
     console.log(backendUrl);
     if (session?.user.accessToken) {
-      fetch(`${backendUrl}/posts`, {
+      fetch(`${backendUrl}/posts/`, {
         method: "POST",
         headers: {
           Authorization: session?.user.accessToken || "",
@@ -57,6 +57,7 @@ export default function Navbar() {
       }).then((res) => {
         res.json().then((data) => {
           console.log(data);
+          setIsCreatingPost(false);
         });
       });
     }
@@ -64,18 +65,18 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="max-w-[20vw] h-screen flex flex-col justify-between py-12 px-4 border-r-[1px] border-l-[1px] border-black">
+      <div className="min-w-[20vw] max-w-[20vw] h-screen flex flex-col justify-between py-12 px-4 border-r-[1px] border-l-[1px] border-black">
         <div>
           <div className="flex items-center gap-2">
             <Image src={Logo} alt="trvled logo" className="w-9" />
-            <Link className="text-primary font-black text-4xl" href={"/"}>
+            <Link className="text-primary font-black text-4xl" href={"/home"}>
               trveld
             </Link>
           </div>
           <div className="flex flex-col gap-6 pt-8">
             <div className="flex items-center gap-2">
               <MdHome className="h-10 w-10" />
-              <Link className="font-medium text-2xl" href={"/"}>
+              <Link className="font-medium text-2xl" href={"/home"}>
                 Home
               </Link>
             </div>
