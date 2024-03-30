@@ -10,9 +10,11 @@ import {
 } from "react-simple-maps";
 import WorldJSON from "./world.json";
 import { MdFilterCenterFocus } from "react-icons/md";
+import { useSession } from "next-auth/react";
 
 export default function Map() {
   const router = useRouter();
+  let { data: session } = useSession();
 
   const [tooltipContent, setTooltipContent] = useState("Not hovering");
   const [position, setPosition] = useState({
@@ -27,9 +29,9 @@ export default function Map() {
   const setVisitedCountries = (visitedCountries: string[]) => {
     if (!visitedCountries) return;
 
-    visitedCountries.forEach((visitedId) => {
+    session?.user.globalVisited.forEach((visitedId) => {
       WorldJSON.objects.countries.geometries.forEach((country) => {
-        if (country.id === visitedId) {
+        if (country.id === visitedId.toString()) {
           country.properties.visited = true;
         }
       });

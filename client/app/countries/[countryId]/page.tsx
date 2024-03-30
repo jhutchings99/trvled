@@ -2,7 +2,7 @@
 
 import Navbar from "../../components/Navbar/Navbar";
 import { countryIdToName } from "@/app/helpers/countryIdToName";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Memory from "@/app/components/Memory/Memory";
 import { IoIosClose } from "react-icons/io";
@@ -27,7 +27,7 @@ export default function CountryPage({ params }: { params: Params }) {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const countryName = countryIdToName[String(params.countryId)];
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
 
   useEffect(() => {
     if (session?.user.accessToken) {
@@ -85,6 +85,38 @@ export default function CountryPage({ params }: { params: Params }) {
       });
     }
   }
+  // /:userId/:location/:locationId
+  function visitUnvisitCountry() {
+    if (session?.user.accessToken) {
+      fetch(
+        `${backendUrl}/users/${session?.user.id}/global/${params.countryId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: session?.user.accessToken || "",
+          },
+        }
+      ).then((res) => {
+        res.json().then((data) => {
+          console.log("Backend update response:", data); // Did the backend update succeed?
+
+          // Log the session before the update
+          console.log("Session before update:", session);
+
+          update();
+
+          // Log the session after the update
+          console.log("Session after update:", session);
+        });
+      });
+      // ).then((res) => {
+      //   res.json().then((data) => {
+      //     console.log(data);
+      //     setMemories([...memories, data]);
+      //   });
+      // });
+    }
+  }
 
   return (
     <main className="flex px-52">
@@ -96,7 +128,12 @@ export default function CountryPage({ params }: { params: Params }) {
             <input
               type="checkbox"
               className="h-4 w-4"
-              checked={session?.user.usaVisited.includes(params.countryId)}
+              // checked={session?.user.usaVisited.includes(params.countryId)}
+              defaultChecked={session?.user.globalVisited.includes(
+                params.countryId
+              )}
+              key={Math.random()}
+              onChange={visitUnvisitCountry}
             />
           </div>
           <h1 className="text-4xl font-bold mb-4 text-center pt-12 pb-6">
@@ -126,7 +163,7 @@ export default function CountryPage({ params }: { params: Params }) {
               setIsCreatingMemory(false);
             }}
           ></div>
-          <div className="bg-white h-[60vh] w-[30vw] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-md">
+          <div className="bg-white w-[30vw] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-md">
             <IoIosClose
               className="absolute top-0 right-0 h-10 w-10 cursor-pointer"
               onClick={() => {
@@ -153,7 +190,7 @@ export default function CountryPage({ params }: { params: Params }) {
                     onChange={onFileChange}
                   />
                   <button
-                    className="bg-secondary text-primary px-8 py-2 font-medium uppercase rounded-sm shadow-md"
+                    className="bg-secondary text-primary px-8 py-2 font-medium rounded-sm shadow-md"
                     onClick={(e) => {
                       e.preventDefault();
                       console.log(newMemoryContent, newMemoryImage);

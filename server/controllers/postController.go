@@ -1,8 +1,12 @@
 package controllers
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/jhutchings99/trvled/initializers"
 	"github.com/jhutchings99/trvled/models"
@@ -57,27 +61,55 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// get content, and location from body
-	var body struct {
-		Content  string
-		Location string
-	}
+	// get data from form
+	content := c.PostForm("content")
+	location := c.PostForm("location")
 
-	if c.Bind(&body) != nil {
+	// store picture in s3 bucket and get url
+	file, err := c.FormFile("image")
+
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read body",
+			"error": "failed to read file",
 		})
 
 		return
 	}
 
-	// TODO: store picture in cloudinary/s3 bucket and get url
+	// save the file to s3
+	f, err := file.Open()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to read file",
+		})
+
+		return
+	}
+
+	uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String("trveld"),
+		Key:    aws.String(file.Filename),
+		Body:   f,
+		ACL:    "public-read",
+	})
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to upload file",
+		})
+
+		return
+	}
+
+	fmt.Printf("Data for post: %v, %v, %v\n", content, location, uploaderResult.Location)
 
 	// store in database
 	post := models.Post{
-		UserID:   user.(models.User).ID,
-		Content:  body.Content,
-		Location: body.Location,
+		UserID:     user.(models.User).ID,
+		Content:    content,
+		Location:   location,
+		PictureURL: uploaderResult.Location,
 	}
 
 	result := initializers.DB.Create(&post)

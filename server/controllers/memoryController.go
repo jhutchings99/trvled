@@ -70,7 +70,7 @@ func CreateMemory(c *gin.Context) {
 	// now using formdata to get note and image
 	note := c.PostForm("note")
 
-	// TODO: store picture in cloudinary/s3 bucket and get url
+	// store picture in s3 bucket and get url
 	file, err := c.FormFile("image")
 
 	if err != nil {

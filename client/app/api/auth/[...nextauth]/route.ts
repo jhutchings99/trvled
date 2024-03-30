@@ -45,7 +45,19 @@ const handler = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, session, trigger }) {
+      if (trigger === "update") {
+        const backendResponse = await fetch(
+          `http://localhost:8080/users/${token.id}`
+        );
+        const backendData = await backendResponse.json();
+        console.log("RES", backendData);
+
+        return { ...token, ...backendData };
+      }
+
+      console.log("JWT", token, user, session, trigger);
+
       return { ...token, ...user };
     },
     async session({ session, token, user }) {
