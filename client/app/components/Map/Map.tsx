@@ -28,6 +28,7 @@ export default function Map() {
 
   const setVisitedCountries = (visitedCountries: string[]) => {
     if (!visitedCountries) return;
+    if (!session?.user.globalVisited) return;
 
     session?.user.globalVisited.forEach((visitedId) => {
       WorldJSON.objects.countries.geometries.forEach((country) => {

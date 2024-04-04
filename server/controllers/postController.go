@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -15,7 +16,7 @@ import (
 func GetPosts(c *gin.Context) {
 	// get all posts from database
 	var posts []models.Post
-	result := initializers.DB.Find(&posts)
+	result := initializers.DB.Preload("User").Find(&posts)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -35,7 +36,7 @@ func GetPost(c *gin.Context) {
 
 	// get post from database
 	var post models.Post
-	result := initializers.DB.First(&post, "id = ?", postID)
+	result := initializers.DB.Preload("User").First(&post, "id = ?", postID)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -66,64 +67,92 @@ func CreatePost(c *gin.Context) {
 	location := c.PostForm("location")
 
 	// store picture in s3 bucket and get url
-	file, err := c.FormFile("image")
-
+	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read file",
+			"error": "failed to parse form",
 		})
-
 		return
 	}
 
-	// save the file to s3
-	f, err := file.Open()
+	files := form.File["image"] // Get []FileHeader
+	var file *multipart.FileHeader
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read file",
+	if len(files) > 0 {
+		file = files[0] // Take the first file if provided
+	}
+
+	if file != nil {
+
+		// save the file to s3
+		f, err := file.Open()
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to read file",
+			})
+
+			return
+		}
+
+		uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String("trveld"),
+			Key:    aws.String(file.Filename),
+			Body:   f,
+			ACL:    "public-read",
 		})
 
-		return
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to upload file",
+			})
+
+			return
+		}
+
+		fmt.Printf("Data for post: %v, %v, %v\n", content, location, uploaderResult.Location)
+
+		// store in database
+		post := models.Post{
+			UserID:     user.(models.User).ID,
+			Content:    content,
+			Location:   location,
+			PictureURL: uploaderResult.Location,
+		}
+
+		result := initializers.DB.Create(&post)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create post",
+			})
+
+			return
+		}
+
+		// respond
+		c.JSON(http.StatusOK, post)
+	} else {
+
+		post := models.Post{
+			UserID:   user.(models.User).ID,
+			Content:  content,
+			Location: location,
+		}
+
+		result := initializers.DB.Create(&post)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create post",
+			})
+
+			return
+		}
+
+		// respond
+		c.JSON(http.StatusOK, post)
 	}
-
-	uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String("trveld"),
-		Key:    aws.String(file.Filename),
-		Body:   f,
-		ACL:    "public-read",
-	})
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to upload file",
-		})
-
-		return
-	}
-
-	fmt.Printf("Data for post: %v, %v, %v\n", content, location, uploaderResult.Location)
-
-	// store in database
-	post := models.Post{
-		UserID:     user.(models.User).ID,
-		Content:    content,
-		Location:   location,
-		PictureURL: uploaderResult.Location,
-	}
-
-	result := initializers.DB.Create(&post)
-
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create post",
-		})
-
-		return
-	}
-
-	// respond
-	c.JSON(http.StatusOK, post)
 }
 
 func LikeUnlikePost(c *gin.Context) {

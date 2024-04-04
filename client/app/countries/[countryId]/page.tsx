@@ -129,9 +129,11 @@ export default function CountryPage({ params }: { params: Params }) {
               type="checkbox"
               className="h-4 w-4"
               // checked={session?.user.usaVisited.includes(params.countryId)}
-              defaultChecked={session?.user.globalVisited.includes(
-                params.countryId
-              )}
+              defaultChecked={
+                session?.user.globalVisited
+                  ? session?.user.globalVisited.includes(params.countryId)
+                  : false
+              }
               key={Math.random()}
               onChange={visitUnvisitCountry}
             />

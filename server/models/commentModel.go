@@ -8,6 +8,7 @@ import (
 type Comment struct {
 	gorm.Model
 	UserID          uint           `gorm:"index" json:"userID"` // foreign key to user who made the comment
+	User            User           `gorm:"foreignKey:UserID"`
 	CommentableID   uint           `json:"commentableID"`
 	CommentableType string         `json:"commentableType"`
 	Content         string         `json:"content"`

@@ -183,6 +183,9 @@ func LikeUnlikeComment(c *gin.Context) {
 		return
 	}
 
+	// get the updated comment and preload the user before responding
+	initializers.DB.Preload("User").First(&comment, commentId)
+
 	// respond
 	c.JSON(http.StatusOK, comment)
 }
@@ -197,8 +200,11 @@ func GetPostComments(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to get comments",
 		})
-
 		return
+	}
+
+	for i := range comments {
+		initializers.DB.Model(&comments[i]).Association("User").Find(&comments[i].User)
 	}
 
 	c.JSON(http.StatusOK, comments)
@@ -208,7 +214,7 @@ func GetCommentComments(c *gin.Context) {
 	commentID := c.Param("commentId")
 
 	var comments []models.Comment
-	result := initializers.DB.Where("commentable_id = ? AND commentable_type = ?", commentID, "Comment").Find(&comments)
+	result := initializers.DB.Where("commentable_id = ? AND commentable_type = ?", commentID, "Comment").Preload("User").Find(&comments)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -225,13 +231,12 @@ func GetComment(c *gin.Context) {
 	commentID := c.Param("commentId")
 
 	var comment models.Comment
-	result := initializers.DB.First(&comment, commentID)
+	result := initializers.DB.Preload("User").First(&comment, commentID)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to get comment",
 		})
-
 		return
 	}
 

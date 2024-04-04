@@ -3,32 +3,20 @@ import { useEffect, useState } from "react";
 import Post from "./Post";
 import { useSession } from "next-auth/react";
 
-const test = [
-  {
-    content: "I'm a post",
-    location: "New York",
-    pictureUrl:
-      "https://repository-images.githubusercontent.com/260096455/47f1b200-8b2e-11ea-8fa1-ab106189aeb0",
-  },
-  {
-    content: "I'm another post",
-    location: "Los Angeles",
-    pictureUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbcsTQdBsDIMY_YW8GEx5Zsz97KWZ9mhsN6MEb7crmlQ&s",
-  },
-  {
-    content: "I'm a third",
-    location: "Chicago",
-    pictureUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlkWb3ByNH1CiWa2KO4LZxRusfNCcYoAUOQQWQ0zNCjknMXlw4OSBcwTXqXiVEkyxvhvc&usqp=CAU",
-  },
-];
+interface User {
+  username: string;
+  profilePicture: string;
+}
 
 interface Post {
+  ID: string;
+  CreatedAt: string;
   content: string;
   location: string;
   pictureURL: string;
   likes: string[];
+  userID: string;
+  User: User;
 }
 
 export default function SocialFeed() {
@@ -45,7 +33,7 @@ export default function SocialFeed() {
         },
       }).then((res) => {
         res.json().then((data) => {
-          //   console.log(data);
+          console.log("DATA", data);
           setPosts(data);
         });
       });
@@ -55,14 +43,18 @@ export default function SocialFeed() {
   console.log(posts);
 
   return (
-    <main className="bg-red-400 border-r-[1px] border-black w-[60vw] h-screen overflow-y-scroll">
+    <main className="border-r-[1px] border-black w-[40vw] h-screen overflow-y-scroll">
       {posts.map((post, index) => (
         <Post
           key={index}
+          ID={post.ID}
+          CreatedAt={post.CreatedAt}
           content={post.content}
           location={post.location}
           pictureURL={post.pictureURL}
           likes={post.likes}
+          userID={post.userID}
+          User={post.User}
         />
       ))}
     </main>

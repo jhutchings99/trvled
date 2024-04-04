@@ -7,7 +7,8 @@ import (
 
 type Post struct {
 	gorm.Model
-	UserID     uint           `gorm:"index" json:"userID"` // foreign key to user
+	UserID     uint           `json:"userID"`
+	User       User           `gorm:"foreignKey:UserID"`
 	Content    string         `json:"content"`
 	PictureURL string         `json:"pictureURL"`
 	Location   string         `json:"location"`
