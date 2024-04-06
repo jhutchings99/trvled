@@ -144,16 +144,32 @@ export default function Post({
         <div>
           <div className="flex flex-col items-start">
             <div className="flex items-start gap-2">
-              <Image
-                src={User.profilePicture}
-                alt="profile picture"
-                height={500}
-                width={500}
-                className="rounded-full h-12 w-12"
-              />
+              {User.profilePicture && (
+                <Image
+                  src={User.profilePicture}
+                  alt="profile picture"
+                  height={500}
+                  width={500}
+                  className="rounded-full h-12 w-12"
+                />
+              )}
+
+              {!User.profilePicture && (
+                <p className="rounded-full h-12 w-12 bg-gray-200 flex justify-center items-center">
+                  ?
+                </p>
+              )}
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="text-lg font-medium">{User.username}</p>
+                  <p
+                    className="text-lg font-medium hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/profile/${userID}`);
+                    }}
+                  >
+                    {User.username}
+                  </p>
                   <p className="text-md text-gray-800">@{User.username}</p>
                   <LuDot className="w-4 h-4" />
                   <p className="text-sm">{formatDate(CreatedAt)}</p>

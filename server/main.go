@@ -38,6 +38,10 @@ func main() {
 		users.PATCH("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
 
 		users.GET("/:userId/posts/", controllers.GetUserPosts)
+		users.GET("/:userId/posts/liked", controllers.GetUserLikedPosts)
+
+		users.GET("/:userId/isFollowing", middleware.RequireAuth, controllers.IsFollowing)
+		users.PATCH("/:userId/follow", middleware.RequireAuth, controllers.FollowUnfollowUser)
 	}
 
 	posts := router.Group("/posts")

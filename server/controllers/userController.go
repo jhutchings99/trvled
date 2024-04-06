@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -264,4 +265,172 @@ func GetUserPosts(c *gin.Context) {
 
 	// respond
 	c.JSON(http.StatusOK, posts)
+}
+
+func GetUserLikedPosts(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// convert liked posts array of strings to array of uints for query
+	var likedPosts []uint
+	for _, id := range user.LikedPosts {
+		// Convert id from string to uint
+		convertedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to convert id",
+			})
+			return
+		}
+		likedPosts = append(likedPosts, uint(convertedID))
+	}
+
+	// get posts
+	var posts []models.Post
+	result = initializers.DB.Preload("User").Where("id IN ?", likedPosts).Find(&posts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find posts",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, posts)
+}
+
+func IsFollowing(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
+	// get user to check if following
+	userId := c.Param("userId")
+
+	// get user
+	var userToCheck models.User
+	result := initializers.DB.First(&userToCheck, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// check if user is following
+	isFollowing := false
+	for _, id := range user.(models.User).Following {
+		if id == userId {
+			isFollowing = true
+			break
+		}
+	}
+
+	// respond
+	c.JSON(http.StatusOK, gin.H{
+		"isFollowing": isFollowing,
+	})
+}
+
+func FollowUnfollowUser(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
+	var dbUser models.User
+	result := initializers.DB.First(&dbUser, user.(models.User).ID)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// get user to follow/unfollow
+	userId := c.Param("userId")
+
+	// get user
+	var userToFollow models.User
+	result = initializers.DB.First(&userToFollow, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// check if user is already following
+	isFollowing := false
+	index := -1
+	for i, id := range user.(models.User).Following {
+		if id == userId {
+			isFollowing = true
+			index = i
+			break
+		}
+	}
+
+	// follow/unfollow user
+	if !isFollowing {
+		dbUser.Following = append(dbUser.Following, userId)
+		userToFollow.Followers = append(userToFollow.Followers, strconv.Itoa(int(dbUser.ID)))
+	} else {
+		dbUser.Following = append(dbUser.Following[:index], dbUser.Following[index+1:]...)
+		userToFollow.Followers = append(userToFollow.Followers[:index], userToFollow.Followers[index+1:]...)
+	}
+
+	// update users
+	result = initializers.DB.Save(&dbUser)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update user",
+		})
+
+		return
+	}
+
+	result = initializers.DB.Save(&userToFollow)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update user",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, user)
 }

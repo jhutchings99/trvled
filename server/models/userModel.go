@@ -13,4 +13,7 @@ type User struct {
 	ProfilePicture string         `json:"profilePicture"`
 	USAVisited     pq.StringArray `gorm:"type:text[]" json:"usaVisited"`
 	GlobalVisited  pq.StringArray `gorm:"type:text[]" json:"globalVisited"`
+	Following      pq.StringArray `gorm:"type:text[]" json:"following"`
+	Followers      pq.StringArray `gorm:"type:text[]" json:"followers"`
+	LikedPosts     pq.StringArray `gorm:"type:text[]" json:"likedPosts"`
 }

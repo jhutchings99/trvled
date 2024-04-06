@@ -203,6 +203,10 @@ func LikeUnlikePost(c *gin.Context) {
 		return
 	}
 
+	// get the actual user from the database
+	var dbUser models.User
+	initializers.DB.First(&dbUser, "email = ?", user.(models.User).Email)
+
 	// get post id from params
 	postID := c.Param("postId")
 
@@ -232,8 +236,21 @@ func LikeUnlikePost(c *gin.Context) {
 	// if liked remove like using index
 	if liked {
 		post.Likes = append(post.Likes[:index], post.Likes[index+1:]...)
+		dbUser.LikedPosts = append(dbUser.LikedPosts[:index], dbUser.LikedPosts[index+1:]...)
 	} else {
 		post.Likes = append(post.Likes, user.(models.User).Email)
+		dbUser.LikedPosts = append(dbUser.LikedPosts, postID)
+	}
+
+	// update user in database
+	result = initializers.DB.Save(&dbUser)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update user",
+		})
+
+		return
 	}
 
 	// update post in database

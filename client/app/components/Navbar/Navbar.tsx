@@ -12,8 +12,15 @@ import {
   MdWorkspaces,
 } from "react-icons/md";
 import { IoIosClose } from "react-icons/io";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+interface User {
+  username: string;
+  profilePicture: string;
+  CreatedAt: string;
+}
 
 export default function Navbar() {
   const [isCreatingPost, setIsCreatingPost] = useState(false);
@@ -22,6 +29,28 @@ export default function Navbar() {
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { data: session, update } = useSession();
+  const [user, setUser] = useState({} as User);
+  const router = useRouter();
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  function getUser() {
+    if (session?.user.accessToken) {
+      fetch(`${backendUrl}/users/${session?.user.id}`, {
+        method: "GET",
+        headers: {
+          Authorization: session?.user.accessToken || "",
+        },
+      }).then((res) => {
+        res.json().then((data) => {
+          console.log(data);
+          setUser(data);
+        });
+      });
+    }
+  }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files) {
@@ -108,22 +137,36 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-        <Link className="w-64" href={"/profile"}>
+        <a
+          className="w-64"
+          onClick={() => {
+            router.push(`/profile/${session?.user.id}`);
+          }}
+        >
           <div className="flex justify-between px-6 py-2 rounded-full items-center hover:bg-slate-200">
             <div className="flex gap-2">
-              <Image
-                src={ProfilePic}
-                alt="fake profile pic for testing"
-                className="h-12 w-12 rounded-full"
-              />
+              {user.profilePicture && (
+                <Image
+                  src={user.profilePicture ?? ""}
+                  alt="Profile Picture"
+                  width={200}
+                  height={200}
+                  className="rounded-full h-12 w-12"
+                />
+              )}
+              {!user.profilePicture && (
+                <p className="rounded-full h-12 w-12 bg-gray-200 flex items-center justify-center">
+                  ?
+                </p>
+              )}
               <div>
-                <p>Username</p>
-                <p>@Username</p>
+                <p>{user.username}</p>
+                <p>@{user.username}</p>
               </div>
             </div>
             <MdWorkspaces className="h-4 w-4" />
           </div>
-        </Link>
+        </a>
       </div>
       {/* CREATE POST POPUP */}
       {isCreatingPost && (

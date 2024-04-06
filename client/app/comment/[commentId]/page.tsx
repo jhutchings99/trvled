@@ -214,13 +214,21 @@ export default function PostPage({
         <div>
           <div className="flex flex-col items-start p-4">
             <div className="flex items-start gap-2">
-              <Image
-                src={comment?.User.profilePicture ?? ""}
-                alt="profile picture"
-                height={500}
-                width={500}
-                className="rounded-full h-12 w-12"
-              />
+              {comment?.User.profilePicture && (
+                <Image
+                  src={comment?.User.profilePicture}
+                  alt="profile picture"
+                  height={500}
+                  width={500}
+                  className="rounded-full h-12 w-12"
+                />
+              )}
+
+              {!comment?.User.profilePicture && (
+                <p className="rounded-full h-12 w-12 bg-gray-200 flex justify-center items-center">
+                  ?
+                </p>
+              )}
               <div>
                 <div className="flex items-center gap-1">
                   <p className="text-lg font-medium">
