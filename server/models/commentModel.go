@@ -14,4 +14,6 @@ type Comment struct {
 	Content         string         `json:"content"`
 	PictureURL      string         `json:"pictureURL"`
 	Likes           pq.StringArray `gorm:"type:text[]" json:"likes"`
+	NumComments     int            `json:"numComments"`
+	UniqueViewers   pq.StringArray `gorm:"type:text[]" json:"uniqueViewers"`
 }

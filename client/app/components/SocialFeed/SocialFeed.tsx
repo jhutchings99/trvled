@@ -17,6 +17,8 @@ interface Post {
   likes: string[];
   userID: string;
   User: User;
+  uniqueViewers: string[];
+  numComments: number;
 }
 
 export default function SocialFeed() {
@@ -55,6 +57,8 @@ export default function SocialFeed() {
           likes={post.likes}
           userID={post.userID}
           User={post.User}
+          uniqueViewers={post.uniqueViewers}
+          numComments={post.numComments}
         />
       ))}
     </main>

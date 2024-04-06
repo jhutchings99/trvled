@@ -31,12 +31,48 @@ func GetPosts(c *gin.Context) {
 }
 
 func GetPost(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
 	// get post id from params
 	postID := c.Param("postId")
 
 	// get post from database
 	var post models.Post
-	result := initializers.DB.Preload("User").First(&post, "id = ?", postID)
+	initializers.DB.Preload("User").First(&post, "id = ?", postID)
+
+	// check if user has viewed post
+	var userViewed bool
+	for _, viewer := range post.UniqueViewers {
+		if viewer == user.(models.User).Email {
+			userViewed = true
+			break
+		}
+	}
+
+	// if user has not viewed post, add user to unique viewers
+	if !userViewed {
+		post.UniqueViewers = append(post.UniqueViewers, user.(models.User).Email)
+	}
+
+	// update post in database
+	result := initializers.DB.Save(&post)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update post",
+		})
+
+		return
+	}
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

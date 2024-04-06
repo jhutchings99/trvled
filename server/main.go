@@ -43,7 +43,7 @@ func main() {
 	posts := router.Group("/posts")
 	{
 		posts.GET("/", controllers.GetPosts)
-		posts.GET("/:postId", controllers.GetPost)
+		posts.GET("/:postId", middleware.RequireAuth, controllers.GetPost)
 		posts.GET("/:postId/comments", controllers.GetPostComments)
 		posts.POST("/", middleware.RequireAuth, controllers.CreatePost)
 		posts.POST("/:postId/comment", middleware.RequireAuth, controllers.CreateCommentOnPost)

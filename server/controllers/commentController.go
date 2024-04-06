@@ -1,9 +1,14 @@
 package controllers
 
 import (
+	"context"
+	"fmt"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/jhutchings99/trvled/initializers"
 	"github.com/jhutchings99/trvled/models"
@@ -31,41 +36,108 @@ func CreateCommentOnPost(c *gin.Context) {
 		return
 	}
 
-	// get content
-	var body struct {
-		Content string
-	}
+	// get post from database
+	var post models.Post
+	initializers.DB.First(&post, "id = ?", postID)
 
-	if c.Bind(&body) != nil {
+	// get content from form
+	content := c.PostForm("content")
+
+	// store picture in s3 bucket and get url
+	form, err := c.MultipartForm()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read body",
+			"error": "failed to parse form",
 		})
-
 		return
 	}
 
-	// TODO: store picture in cloudinary/s3 bucket and get url
+	files := form.File["image"] // Get []FileHeader
+	var file *multipart.FileHeader
 
-	// store in database
-	commentOnPost := models.Comment{
-		UserID:          user.(models.User).ID,
-		CommentableID:   uint(postIDUint),
-		CommentableType: "Post",
-		Content:         body.Content,
+	if len(files) > 0 {
+		file = files[0] // Take the first file if provided
 	}
 
-	result := initializers.DB.Create(&commentOnPost)
+	if file != nil {
 
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create comment on post",
+		// save the file to s3
+		f, err := file.Open()
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to read file",
+			})
+
+			return
+		}
+
+		uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String("trveld"),
+			Key:    aws.String(file.Filename),
+			Body:   f,
+			ACL:    "public-read",
 		})
 
-		return
-	}
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to upload file",
+			})
 
-	// respond
-	c.JSON(http.StatusOK, commentOnPost)
+			return
+		}
+
+		fmt.Printf("Data for post: %v, %v\n", content, uploaderResult.Location)
+
+		// store in database
+		commentOnPost := models.Comment{
+			UserID:          user.(models.User).ID,
+			CommentableID:   uint(postIDUint),
+			CommentableType: "Post",
+			Content:         content,
+			PictureURL:      uploaderResult.Location,
+		}
+
+		result := initializers.DB.Create(&commentOnPost)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create comment on post",
+			})
+
+			return
+		}
+
+		// increment number of comments on the post
+		initializers.DB.Model(&post).Update("NumComments", post.NumComments+1)
+
+		// respond
+		c.JSON(http.StatusOK, commentOnPost)
+	} else {
+
+		commentOnPost := models.Comment{
+			UserID:          user.(models.User).ID,
+			CommentableID:   uint(postIDUint),
+			CommentableType: "Post",
+			Content:         content,
+		}
+
+		result := initializers.DB.Create(&commentOnPost)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create comment on post",
+			})
+
+			return
+		}
+
+		// increment number of comments on the post
+		initializers.DB.Model(&post).Update("NumComments", post.NumComments+1)
+
+		// respond
+		c.JSON(http.StatusOK, commentOnPost)
+	}
 }
 
 func CreateCommentOnComment(c *gin.Context) {
@@ -80,7 +152,7 @@ func CreateCommentOnComment(c *gin.Context) {
 		return
 	}
 
-	// get post id from params
+	// get comment id from params
 	commentId := c.Param("commentId")
 	commentIDUint, err := strconv.ParseUint(commentId, 10, 64)
 	if err != nil {
@@ -90,41 +162,109 @@ func CreateCommentOnComment(c *gin.Context) {
 		return
 	}
 
-	// get content
-	var body struct {
-		Content string
-	}
+	// get comment from database
+	var comment models.Comment
+	initializers.DB.First(&comment, "id = ?", commentId)
 
-	if c.Bind(&body) != nil {
+	// get data from form
+	content := c.PostForm("content")
+
+	// store picture in s3 bucket and get url
+	form, err := c.MultipartForm()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to read body",
+			"error": "failed to parse form",
 		})
-
 		return
 	}
 
-	// TODO: store picture in cloudinary/s3 bucket and get url
+	files := form.File["image"] // Get []FileHeader
+	var file *multipart.FileHeader
 
-	// store in database
-	commentOnComment := models.Comment{
-		UserID:          user.(models.User).ID,
-		CommentableID:   uint(commentIDUint),
-		CommentableType: "Comment",
-		Content:         body.Content,
+	if len(files) > 0 {
+		file = files[0] // Take the first file if provided
 	}
 
-	result := initializers.DB.Create(&commentOnComment)
+	if file != nil {
 
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create comment on comment",
+		// save the file to s3
+		f, err := file.Open()
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to read file",
+			})
+
+			return
+		}
+
+		uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String("trveld"),
+			Key:    aws.String(file.Filename),
+			Body:   f,
+			ACL:    "public-read",
 		})
 
-		return
-	}
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to upload file",
+			})
 
-	// respond
-	c.JSON(http.StatusOK, commentOnComment)
+			return
+		}
+
+		fmt.Printf("Data for post: %v, %v\n", content, uploaderResult.Location)
+
+		// store in database
+		commentOnComment := models.Comment{
+			UserID:          user.(models.User).ID,
+			CommentableID:   uint(commentIDUint),
+			CommentableType: "Comment",
+			Content:         content,
+			PictureURL:      uploaderResult.Location,
+		}
+
+		result := initializers.DB.Create(&commentOnComment)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create comment on comment",
+			})
+
+			return
+		}
+
+		// increment number of comments on the comment
+		initializers.DB.Model(&comment).Update("NumComments", comment.NumComments+1)
+
+		// respond
+		c.JSON(http.StatusOK, commentOnComment)
+	} else {
+
+		// store in database
+		commentOnComment := models.Comment{
+			UserID:          user.(models.User).ID,
+			CommentableID:   uint(commentIDUint),
+			CommentableType: "Comment",
+			Content:         content,
+		}
+
+		result := initializers.DB.Create(&commentOnComment)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to create comment on comment",
+			})
+
+			return
+		}
+
+		// increment number of comments on the comment
+		initializers.DB.Model(&comment).Update("NumComments", comment.NumComments+1)
+
+		// respond
+		c.JSON(http.StatusOK, commentOnComment)
+	}
 }
 
 func LikeUnlikeComment(c *gin.Context) {
