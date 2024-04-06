@@ -368,6 +368,17 @@ func GetCommentComments(c *gin.Context) {
 }
 
 func GetComment(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
 	commentID := c.Param("commentId")
 
 	var comment models.Comment
@@ -376,6 +387,30 @@ func GetComment(c *gin.Context) {
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to get comment",
+		})
+		return
+	}
+
+	// check if user has viewed comment
+	viewed := false
+	for _, viewer := range comment.UniqueViewers {
+		if viewer == user.(models.User).Email {
+			viewed = true
+			break
+		}
+	}
+
+	// if user has not viewed comment, add user to unique viewers
+	if !viewed {
+		comment.UniqueViewers = append(comment.UniqueViewers, user.(models.User).Email)
+	}
+
+	// update comment in database
+	result = initializers.DB.Save(&comment)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update comment",
 		})
 		return
 	}

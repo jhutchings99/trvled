@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { LuDot } from "react-icons/lu";
 import Navbar from "@/app/components/Navbar/Navbar";
 import { IoIosClose } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -63,46 +64,46 @@ interface User {
   profilePicture: string;
 }
 
-export default function PostPage({ params }: { params: { postId: string } }) {
-  const ID = params.postId;
-  const [post, setPost] = useState<Post | null>(null);
+export default function PostPage({
+  params,
+}: {
+  params: { commentId: string };
+}) {
+  const ID = params.commentId;
+  const [comment, setComment] = useState<Comment | null>(null);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { data: session, update } = useSession();
-  const [localLikes, setLocalLikes] = useState(post?.likes);
-  const [isCreatingPostComment, setIsCreatingPostComment] = useState(false);
+  const [localLikes, setLocalLikes] = useState(comment?.likes);
   const [isCreatingCommentComment, setIsCreatingCommentComment] =
     useState(false);
-  const [newPostCommentContent, setNewPostCommentContent] = useState("");
-  const [newPostCommentImage, setNewPostCommentImage] = useState<File | null>(
-    null
-  );
   const [newCommentCommentContent, setNewCommentCommentContent] = useState("");
   const [newCommentCommentImage, setNewCommentCommentImage] =
     useState<File | null>(null);
   const [commentId, setCommentId] = useState("");
+  const router = useRouter();
 
-  //   useEffect(() => {
-  //     if (session?.user.accessToken) {
-  //       fetch(`${backendUrl}/posts/${ID}`, {
-  //         method: "GET",
-  //         headers: {
-  //           Authorization: session?.user.accessToken || "",
-  //         },
-  //       }).then((res) => {
-  //         res.json().then((data) => {
-  //           console.log("POST", data);
-  //           setPost(data);
-  //           setLocalLikes(data.likes);
-  //         });
-  //       });
+  useEffect(() => {
+    if (session?.user.accessToken) {
+      fetch(`${backendUrl}/comments/${ID}`, {
+        method: "GET",
+        headers: {
+          Authorization: session?.user.accessToken || "",
+        },
+      }).then((res) => {
+        res.json().then((data) => {
+          console.log("POST", data);
+          setComment(data);
+          setLocalLikes(data.likes);
+        });
+      });
 
-  //       getComments();
-  //     }
-  //   }, [backendUrl, session?.user.accessToken, ID, post?.userID]);
+      getComments();
+    }
+  }, [backendUrl, session?.user.accessToken, ID]);
 
   function getComments() {
-    fetch(`${backendUrl}/posts/${ID}/comments`).then((res) => {
+    fetch(`${backendUrl}/comments/${ID}/comments`).then((res) => {
       res.json().then((data) => {
         for (let i = 0; i < data.length; i++) {
           fetch(`${backendUrl}/users/${data[i].userID}`).then((res) => {
@@ -117,7 +118,24 @@ export default function PostPage({ params }: { params: { postId: string } }) {
     });
   }
 
-  function likeUnlikeComment(commentId: string, index: number) {
+  function likeUnlikeComment() {
+    if (session?.user.accessToken) {
+      fetch(`${backendUrl}/comments/${ID}/like`, {
+        method: "PATCH",
+        headers: {
+          Authorization: session?.user.accessToken || "",
+        },
+      }).then((res) => {
+        res.json().then((data) => {
+          console.log(data);
+          //   update the post to reflect the new likes
+          setLocalLikes(data.likes);
+        });
+      });
+    }
+  }
+
+  function likeUnlikeCommentComment(commentId: string, index: number) {
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/comments/${commentId}/like`, {
         method: "PATCH",
@@ -188,5 +206,250 @@ export default function PostPage({ params }: { params: { postId: string } }) {
     }
   }
 
-  return <div className="flex px-52">stuff</div>;
+  return (
+    <div className="flex px-52">
+      {" "}
+      <Navbar />
+      <main className="h-full w-[40vw]">
+        <div>
+          <div className="flex flex-col items-start p-4">
+            <div className="flex items-start gap-2">
+              <Image
+                src={comment?.User.profilePicture ?? ""}
+                alt="profile picture"
+                height={500}
+                width={500}
+                className="rounded-full h-12 w-12"
+              />
+              <div>
+                <div className="flex items-center gap-1">
+                  <p className="text-lg font-medium">
+                    {comment?.User.username}
+                  </p>
+                  <p className="text-md text-gray-800">
+                    @{comment?.User.username}
+                  </p>
+                  <LuDot className="w-4 h-4" />
+                  <p className="text-sm">
+                    {formatDate(comment?.CreatedAt ?? "")}
+                  </p>
+                </div>
+                <p>{comment?.content}</p>
+                {comment?.pictureURL != "" && (
+                  <Image
+                    src={comment?.pictureURL ?? ""}
+                    alt="post image"
+                    height={200}
+                    width={200}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* interaction bar */}
+          <div className="flex justify-around py-2 border-b-[1px] border-black">
+            {/* like */}
+            <div className="flex items-center gap-1 hover:cursor-pointer">
+              {localLikes != undefined &&
+              localLikes.includes(session?.user.email ?? "") ? (
+                <IoHeart
+                  className="text-red-500 w-5 h-5"
+                  onClick={() => {
+                    likeUnlikeComment();
+                  }}
+                />
+              ) : (
+                <IoIosHeartEmpty
+                  className="w-5 h-5"
+                  onClick={() => {
+                    likeUnlikeComment();
+                  }}
+                />
+              )}
+              <p className="text-md">
+                {localLikes == undefined ? 0 : localLikes.length}
+              </p>
+            </div>
+
+            {/* reply */}
+            <div
+              className="flex items-center gap-1 hover:cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCommentId(comment?.ID ?? "");
+                setIsCreatingCommentComment(true);
+              }}
+            >
+              <IoChatboxOutline className="w-5 h-5" />
+              <p className="text-md">{comment?.numComments}</p>
+            </div>
+
+            {/* views */}
+            <div className="flex items-center gap-1">
+              <MdOutlineAutoGraph className="w-5 h-5" />
+              <p className="text-md">
+                {comment?.uniqueViewers == undefined
+                  ? 0
+                  : comment?.uniqueViewers.length}
+              </p>
+            </div>
+          </div>
+
+          {/* comments */}
+          <div>
+            {comments?.map((comment, index) => (
+              <div
+                key={comment.ID}
+                className="hover:bg-gray-100 hover:cursor-pointer"
+                onClick={() => {
+                  router.push(`/comment/${comment.ID}`);
+                }}
+              >
+                <div className="flex flex-col items-start">
+                  <div className="flex items-start gap-2 p-4">
+                    <Image
+                      src={comment.User.profilePicture ?? ""}
+                      alt="profile picture"
+                      height={500}
+                      width={500}
+                      className="rounded-full h-12 w-12"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <p className="text-lg font-medium">
+                          {comment.User.username}
+                        </p>
+                        <p className="text-md text-gray-800">
+                          @{comment.User.username}
+                        </p>
+                        <LuDot className="w-4 h-4" />
+                        <p className="text-sm">
+                          {formatDate(comment.CreatedAt ?? "")}
+                        </p>
+                      </div>
+                      <p>{comment.content}</p>
+                      {comment.pictureURL && (
+                        <Image
+                          src={comment.pictureURL ?? ""}
+                          alt="post image"
+                          height={200}
+                          width={200}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* interaction bar */}
+                  <div className="flex justify-around py-2 w-full border-b-[1px] border-black">
+                    {/* like */}
+                    <div className="flex items-center gap-1 hover:cursor-pointer">
+                      {comment.likes != undefined &&
+                      comment.likes.includes(session?.user.email ?? "") ? (
+                        <IoHeart
+                          className="text-red-500 w-5 h-5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            likeUnlikeCommentComment(comment.ID, index);
+                          }}
+                        />
+                      ) : (
+                        <IoIosHeartEmpty
+                          className="w-5 h-5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            likeUnlikeCommentComment(comment.ID, index);
+                          }}
+                        />
+                      )}
+                      <p className="text-md">
+                        {comment.likes == undefined ? 0 : comment.likes.length}
+                      </p>
+                    </div>
+
+                    {/* reply */}
+                    <div
+                      className="flex items-center gap-1 hover:cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCommentId(comment.ID);
+                        setIsCreatingCommentComment(true);
+                      }}
+                    >
+                      <IoChatboxOutline className="w-5 h-5" />
+                      <p className="text-md">{comment.numComments}</p>
+                    </div>
+
+                    {/* views */}
+                    <div className="flex items-center gap-1">
+                      <MdOutlineAutoGraph className="w-5 h-5" />
+                      <p className="text-md">
+                        {comment.uniqueViewers == undefined
+                          ? 0
+                          : comment.uniqueViewers.length}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+      <div className="border-l-[1px] border-black"></div>
+      {/* CREATE COMMENT POPUP */}
+      {isCreatingCommentComment && (
+        <>
+          <div
+            className="bg-blur w-screen h-screen fixed top-0 left-0 backdrop-blur-[2px] z-40"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsCreatingCommentComment(false);
+            }}
+          ></div>
+          <div className="bg-white w-[30vw] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-md z-50">
+            <IoIosClose
+              className="absolute top-0 right-0 h-10 w-10 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCreatingCommentComment(false);
+              }}
+            />
+            <div className="p-6">
+              <h1 className="uppercase font-bold text-sm pt-2">
+                Create a new comment
+              </h1>
+              <form>
+                <textarea
+                  name=""
+                  id=""
+                  className="border-[1px] border-black w-full h-[45vh] p-2 resize-none rounded"
+                  placeholder="Write your comment here..."
+                  onChange={onCommentCommentContentChange}
+                ></textarea>
+                <div className="flex items-center justify-between pt-4">
+                  <input
+                    type="file"
+                    name="image"
+                    accept=".png, .jpg, .jpeg"
+                    onChange={onCommentCommentFileChange}
+                  />
+                  <button
+                    className="bg-secondary text-primary px-8 py-2 font-medium rounded-sm shadow-md"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      createCommentComment();
+                    }}
+                    type="submit"
+                  >
+                    Post
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

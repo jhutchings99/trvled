@@ -53,7 +53,7 @@ func main() {
 
 	comments := router.Group("/comments")
 	{
-		comments.GET("/:commentId", controllers.GetComment)
+		comments.GET("/:commentId", middleware.RequireAuth, controllers.GetComment)
 		comments.GET("/:commentId/comments", controllers.GetCommentComments)
 		comments.POST("/:commentId/comment", middleware.RequireAuth, controllers.CreateCommentOnComment)
 		comments.PATCH("/:commentId/like", middleware.RequireAuth, controllers.LikeUnlikeComment)

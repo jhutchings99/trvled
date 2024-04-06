@@ -9,6 +9,8 @@ declare module "next-auth" {
       id: number;
       usaVisited: number[];
       username: string;
+      profilePicture: string;
+      CreatedAt: string;
     };
   }
 }

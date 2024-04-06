@@ -252,7 +252,7 @@ func GetUserPosts(c *gin.Context) {
 
 	// get posts
 	var posts []models.Post
-	result = initializers.DB.Where("user_id = ?", user.ID).Find(&posts)
+	result = initializers.DB.Preload("User").Where("user_id = ?", user.ID).Find(&posts)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
