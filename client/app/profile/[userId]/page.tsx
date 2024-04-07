@@ -8,6 +8,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { FaCalendarAlt } from "react-icons/fa";
 import Post from "../../components/SocialFeed/Post";
 import { IoIosClose } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
 interface Post {
   ID: string;
@@ -71,6 +72,7 @@ export default function ProfilePage({
   const [newUsername, setNewUsername] = useState("");
   const [newBio, setNewBio] = useState("");
   const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     getUser();
@@ -87,7 +89,7 @@ export default function ProfilePage({
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           setUser(data);
         });
       });
@@ -200,7 +202,12 @@ export default function ProfilePage({
         <Navbar />
         <div className="flex flex-col border-r-[1px] border-black w-[40vw]">
           <div className="flex gap-8 items-center pl-4">
-            <IoIosArrowRoundBack className="h-10 w-10" />
+            <IoIosArrowRoundBack
+              className="h-10 w-10 hover:cursor-pointer"
+              onClick={() => {
+                router.back();
+              }}
+            />
             <div>
               <h1 className="text-xl font-bold">{user.username}</h1>
               <p className="text-xs">{posts.length ?? 0} posts</p>
@@ -257,8 +264,13 @@ export default function ProfilePage({
               Joined on {formatDate(user.CreatedAt ?? "")}
             </p>
           </div>
-          <div className="flex gap-4 mt-2 pb-6 pl-4 ">
-            <p>
+          <div className="flex gap-4 mt-2 pb-6 pl-4">
+            <p
+              onClick={() => {
+                router.push(`/followers/${ID}`);
+              }}
+              className="hover:underline hover:cursor-pointer"
+            >
               <span className="font-bold">
                 {user.following == undefined ? 0 : user.following.length}
               </span>{" "}
@@ -359,7 +371,7 @@ export default function ProfilePage({
             />
             <div className="p-6">
               <h1 className="uppercase font-bold text-sm pt-2">
-                Create a new comment
+                Update user profile
               </h1>
               <form>
                 <input

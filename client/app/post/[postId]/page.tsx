@@ -10,6 +10,7 @@ import { LuDot } from "react-icons/lu";
 import Navbar from "@/app/components/Navbar/Navbar";
 import { IoIosClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import { IoIosArrowRoundBack } from "react-icons/io";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -93,7 +94,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log("POST", data);
+          // console.log("POST", data);
           setPost(data);
           setLocalLikes(data.likes);
         });
@@ -114,7 +115,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
           });
         }
         setComments(data);
-        console.log("COMMENTS:", data);
+        // console.log("COMMENTS:", data);
       });
     });
   }
@@ -128,7 +129,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           //   update the post to reflect the new likes
           setLocalLikes(data.likes);
         });
@@ -148,7 +149,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
           // Check for successful like action
           res.json().then((updatedComment) => {
             // Update the comments array
-            console.log("UPDATED COMMENT", updatedComment);
+            // console.log("UPDATED COMMENT", updatedComment);
             setComments((prevComments) => {
               if (prevComments) {
                 return prevComments.map((comment, i) => {
@@ -208,7 +209,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   }
 
   function createPostComment() {
-    console.log(backendUrl);
+    // console.log(backendUrl);
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/posts/${ID}/comment`, {
         method: "POST",
@@ -218,7 +219,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         body: createPostFormData(),
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           setIsCreatingPostComment(false);
           getComments();
         });
@@ -227,7 +228,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   }
 
   function createCommentComment() {
-    console.log(backendUrl);
+    // console.log(backendUrl);
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/comments/${commentId}/comment`, {
         method: "POST",
@@ -237,7 +238,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         body: createCommentFormData(),
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           setIsCreatingCommentComment(false);
           getComments();
         });
@@ -249,6 +250,16 @@ export default function PostPage({ params }: { params: { postId: string } }) {
     <div className="flex px-52">
       <Navbar />
       <main className="h-full w-[40vw]">
+        <div className="flex gap-8 items-center pl-4">
+          <IoIosArrowRoundBack
+            className="h-10 w-10 hover:cursor-pointer"
+            onClick={() => {
+              router.back();
+            }}
+          />
+
+          <h1 className="text-xl font-bold">Post</h1>
+        </div>
         <div>
           <div className="flex flex-col items-start p-4">
             <div className="flex items-start gap-2">

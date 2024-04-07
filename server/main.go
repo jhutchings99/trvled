@@ -43,6 +43,9 @@ func main() {
 
 		users.GET("/:userId/isFollowing", middleware.RequireAuth, controllers.IsFollowing)
 		users.PATCH("/:userId/follow", middleware.RequireAuth, controllers.FollowUnfollowUser)
+
+		users.GET("/:userId/followers", controllers.GetFollowers)
+		users.GET("/:userId/following", controllers.GetFollowing)
 	}
 
 	posts := router.Group("/posts")

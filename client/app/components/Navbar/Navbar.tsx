@@ -33,10 +33,6 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    getUser();
-  }, []);
-
-  function getUser() {
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/users/${session?.user.id}`, {
         method: "GET",
@@ -50,7 +46,7 @@ export default function Navbar() {
         });
       });
     }
-  }
+  }, [backendUrl, session?.user.accessToken, session?.user.id]);
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files) {
@@ -62,7 +58,7 @@ export default function Navbar() {
     setNewPostContent(event.target.value);
   }
 
-  function onPostLocationChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  function onPostLocationChange(event: React.ChangeEvent<HTMLInputElement>) {
     setNewPostLocation(event.target.value);
   }
 
@@ -193,6 +189,7 @@ export default function Navbar() {
                   type="text"
                   placeholder="Enter the location of your post..."
                   className="border-[1px] border-black w-full p-2 resize-none rounded mb-2"
+                  onChange={onPostLocationChange}
                 />
                 <textarea
                   name=""

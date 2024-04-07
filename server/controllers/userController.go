@@ -527,3 +527,93 @@ func UpdateUser(c *gin.Context) {
 	// respond
 	c.JSON(http.StatusOK, dbUser)
 }
+
+func GetFollowers(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// convert followers array of strings to array of uints for query
+	var followers []uint
+	for _, id := range user.Followers {
+		// Convert id from string to uint
+		convertedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to convert id",
+			})
+			return
+		}
+		followers = append(followers, uint(convertedID))
+	}
+
+	// get users
+	var users []models.User
+	result = initializers.DB.Where("id IN ?", followers).Find(&users)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find users",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, users)
+}
+
+func GetFollowing(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// convert following array of strings to array of uints for query
+	var following []uint
+	for _, id := range user.Following {
+		// Convert id from string to uint
+		convertedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to convert id",
+			})
+			return
+		}
+		following = append(following, uint(convertedID))
+	}
+
+	// get users
+	var users []models.User
+	result = initializers.DB.Where("id IN ?", following).Find(&users)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find users",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, users)
+}

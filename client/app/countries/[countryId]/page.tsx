@@ -6,6 +6,8 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Memory from "@/app/components/Memory/Memory";
 import { IoIosClose } from "react-icons/io";
+import { IoIosArrowRoundBack } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
 interface Params {
   countryId: number;
@@ -24,7 +26,7 @@ export default function CountryPage({ params }: { params: Params }) {
   const [isCreatingMemory, setIsCreatingMemory] = useState(false);
   const [newMemoryContent, setNewMemoryContent] = useState("");
   const [newMemoryImage, setNewMemoryImage] = useState<File | null>(null);
-
+  const router = useRouter();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const countryName = countryIdToName[String(params.countryId)];
   const { data: session, update } = useSession();
@@ -122,7 +124,16 @@ export default function CountryPage({ params }: { params: Params }) {
     <main className="flex px-52">
       <Navbar />
       <div className="flex flex-col w-full border-r-[1px] border-black px-4">
-        <div className="flex items-center justify-around">
+        <div className="flex gap-2 items-center">
+          <IoIosArrowRoundBack
+            className="h-10 w-10 hover:cursor-pointer"
+            onClick={() => {
+              router.back();
+            }}
+          />
+          <h1 className="text-xl font-bold">Back</h1>
+        </div>
+        <div className="flex items-center justify-around pb-1 h-24">
           <div className="flex items-center gap-2">
             <p className="text-md uppercase font-medium">Visited</p>
             <input
