@@ -617,3 +617,48 @@ func GetFollowing(c *gin.Context) {
 	// respond
 	c.JSON(http.StatusOK, users)
 }
+
+func GetFollowingPosts(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// convert following array of strings to array of uints for query
+	var following []uint
+	for _, id := range user.Following {
+		// Convert id from string to uint
+		convertedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to convert id",
+			})
+			return
+		}
+		following = append(following, uint(convertedID))
+	}
+
+	// get posts
+	var posts []models.Post
+	result = initializers.DB.Preload("User").Where("user_id IN ?", following).Find(&posts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find posts",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, posts)
+}
