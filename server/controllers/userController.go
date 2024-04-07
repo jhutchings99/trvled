@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/jhutchings99/trvled/initializers"
@@ -433,4 +437,93 @@ func FollowUnfollowUser(c *gin.Context) {
 
 	// respond
 	c.JSON(http.StatusOK, user)
+}
+
+func UpdateUser(c *gin.Context) {
+	// get logged in user from context
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+
+		return
+	}
+
+	// get user from database
+	var dbUser models.User
+	result := initializers.DB.First(&dbUser, user.(models.User).ID)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// get data from form
+	username := c.PostForm("username")
+	bio := c.PostForm("bio")
+
+	// store picture in s3 bucket and get url
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to parse form",
+		})
+		return
+	}
+
+	files := form.File["image"] // Get []FileHeader
+	var file *multipart.FileHeader
+
+	if len(files) > 0 {
+		file = files[0] // Take the first file if provided
+	}
+
+	if file != nil {
+		// save the file to s3
+		f, err := file.Open()
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to read file",
+			})
+			return
+		}
+		uploaderResult, err := initializers.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String("trveld"),
+			Key:    aws.String(file.Filename),
+			Body:   f,
+			ACL:    "public-read",
+		})
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to upload file",
+			})
+
+			return
+		}
+
+		dbUser.ProfilePicture = uploaderResult.Location
+	}
+
+	// update user
+	dbUser.Username = username
+	dbUser.Bio = bio
+	result = initializers.DB.Save(&dbUser)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to update user",
+		})
+
+		return
+	}
+
+	// respond
+	c.JSON(http.StatusOK, dbUser)
 }

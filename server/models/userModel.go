@@ -10,6 +10,7 @@ type User struct {
 	Email          string         `gorm:"unique" json:"email"`
 	Password       string         `json:"password"`
 	Username       string         `json:"username"`
+	Bio            string         `json:"bio"`
 	ProfilePicture string         `json:"profilePicture"`
 	USAVisited     pq.StringArray `gorm:"type:text[]" json:"usaVisited"`
 	GlobalVisited  pq.StringArray `gorm:"type:text[]" json:"globalVisited"`

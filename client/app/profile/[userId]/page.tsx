@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { FaCalendarAlt } from "react-icons/fa";
 import Post from "../../components/SocialFeed/Post";
+import { IoIosClose } from "react-icons/io";
 
 interface Post {
   ID: string;
@@ -27,6 +28,7 @@ interface User {
   CreatedAt: string;
   followers: string[];
   following: string[];
+  bio: string;
 }
 
 const formatDate = (dateString: string) => {
@@ -65,6 +67,10 @@ export default function ProfilePage({
   const [currentTab, setCurrentTab] = useState<"posts" | "likes">("posts");
   const { data: session, update } = useSession();
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newBio, setNewBio] = useState("");
+  const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
 
   useEffect(() => {
     getUser();
@@ -149,141 +155,251 @@ export default function ProfilePage({
     }
   }
 
+  function onBioChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    setNewBio(event.target.value);
+  }
+
+  function onProfilePictureChange(event: React.ChangeEvent<HTMLInputElement>) {
+    if (event.target.files) {
+      setNewProfilePicture(event.target.files[0]);
+    }
+  }
+
+  function onUsernameChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setNewUsername(event.target.value);
+  }
+
+  function createUpdateUserForm() {
+    const formData = new FormData();
+    formData.append("image", newProfilePicture as Blob);
+    formData.append("username", newUsername);
+    formData.append("bio", newBio);
+    return formData;
+  }
+
+  function updateProfile() {
+    if (session?.user.accessToken) {
+      fetch(`${backendUrl}/users/${ID}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: session?.user.accessToken || "",
+        },
+        body: createUpdateUserForm(),
+      }).then((res) => {
+        res.json().then((data) => {
+          setIsUpdatingProfile(false);
+          setUser(data);
+        });
+      });
+    }
+  }
+
   return (
-    <main className="flex px-52">
-      <Navbar />
-      <div className="flex flex-col border-r-[1px] border-black w-[40vw]">
-        <div className="flex gap-8 items-center pl-4">
-          <IoIosArrowRoundBack className="h-10 w-10" />
+    <>
+      <main className="flex px-52">
+        <Navbar />
+        <div className="flex flex-col border-r-[1px] border-black w-[40vw]">
+          <div className="flex gap-8 items-center pl-4">
+            <IoIosArrowRoundBack className="h-10 w-10" />
+            <div>
+              <h1 className="text-xl font-bold">{user.username}</h1>
+              <p className="text-xs">{posts.length ?? 0} posts</p>
+            </div>
+          </div>
+          <div className="flex justify-between items-center px-4 pt-4 pl-4">
+            {user.profilePicture && (
+              <Image
+                src={user.profilePicture ?? ""}
+                alt="Profile Picture"
+                width={200}
+                height={200}
+                className="rounded-full h-20 w-20"
+              />
+            )}
+            {!user.profilePicture && (
+              <p className="rounded-full h-20 w-20 bg-gray-200 flex items-center justify-center">
+                ?
+              </p>
+            )}
+
+            {session?.user.id !== parseInt(ID) && (
+              <button
+                className="bg-secondary text-primary px-12 py-2 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  followUnfollowUser();
+                }}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            )}
+
+            {session?.user.id === parseInt(ID) && (
+              <button
+                className="bg-secondary text-primary px-12 py-2 rounded-full"
+                onClick={() => {
+                  setNewUsername(user.username);
+                  setNewBio(user.bio);
+                  setIsUpdatingProfile(true);
+                }}
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+          <div className="pl-4">
+            <h1 className="text-2xl font-bold mt-4">{user.username}</h1>
+            <h1 className="text-md">@{user.username}</h1>
+
+            <p className="text-md mt-4">{user.bio}</p>
+            <p className="text-xs font-medium flex items-center gap-1 mt-4">
+              <FaCalendarAlt />
+              Joined on {formatDate(user.CreatedAt ?? "")}
+            </p>
+          </div>
+          <div className="flex gap-4 mt-2 pb-6 pl-4 ">
+            <p>
+              <span className="font-bold">
+                {user.following == undefined ? 0 : user.following.length}
+              </span>{" "}
+              following
+            </p>
+            <p>
+              <span className="font-bold">
+                {user.followers == undefined ? 0 : user.followers.length}
+              </span>{" "}
+              followers
+            </p>
+          </div>
+          <div className="border-b-[1px] border-black flex gap-8 pl-4 pb-2">
+            {currentTab === "posts" ? (
+              <p className="text-lg font-bold">Posts</p>
+            ) : (
+              <p
+                className="text-lg hover:cursor-pointer"
+                onClick={() => {
+                  getPosts();
+                  setCurrentTab("posts");
+                }}
+              >
+                Posts
+              </p>
+            )}
+
+            {currentTab === "likes" ? (
+              <p className="text-lg font-bold">Likes</p>
+            ) : (
+              <p
+                className="text-lg hover:cursor-pointer"
+                onClick={() => {
+                  getLikedPosts();
+                  setCurrentTab("likes");
+                }}
+              >
+                Likes
+              </p>
+            )}
+          </div>
           <div>
-            <h1 className="text-xl font-bold">{user.username}</h1>
-            <p className="text-xs">{posts.length ?? 0} posts</p>
+            {currentTab === "posts" &&
+              posts.map((post, index) => (
+                <Post
+                  key={index}
+                  ID={post.ID}
+                  CreatedAt={post.CreatedAt}
+                  content={post.content}
+                  location={post.location}
+                  pictureURL={post.pictureURL}
+                  likes={post.likes}
+                  userID={post.userID}
+                  User={post.User}
+                  uniqueViewers={post.uniqueViewers}
+                  numComments={post.numComments}
+                />
+              ))}
+
+            {likedPosts &&
+              currentTab === "likes" &&
+              likedPosts.map((post, index) => (
+                <Post
+                  key={index}
+                  ID={post.ID}
+                  CreatedAt={post.CreatedAt}
+                  content={post.content}
+                  location={post.location}
+                  pictureURL={post.pictureURL}
+                  likes={post.likes}
+                  userID={post.userID}
+                  User={post.User}
+                  uniqueViewers={post.uniqueViewers}
+                  numComments={post.numComments}
+                />
+              ))}
           </div>
         </div>
-        <div className="flex justify-between items-center px-4 pt-4 pl-4">
-          {user.profilePicture && (
-            <Image
-              src={user.profilePicture ?? ""}
-              alt="Profile Picture"
-              width={200}
-              height={200}
-              className="rounded-full h-20 w-20"
-            />
-          )}
-          {!user.profilePicture && (
-            <p className="rounded-full h-20 w-20 bg-gray-200 flex items-center justify-center">
-              ?
-            </p>
-          )}
+      </main>
 
-          {session?.user.id !== parseInt(ID) && (
-            <button
-              className="bg-secondary text-primary px-12 py-2 rounded-full"
+      {/* UPDATE USER POPUP */}
+      {isUpdatingProfile && (
+        <>
+          <div
+            className="bg-blur w-screen h-screen fixed top-0 left-0 backdrop-blur-[2px] z-40"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsUpdatingProfile(false);
+            }}
+          ></div>
+          <div className="bg-white w-[30vw] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-md z-50">
+            <IoIosClose
+              className="absolute top-0 right-0 h-10 w-10 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                followUnfollowUser();
+                setIsUpdatingProfile(false);
               }}
-            >
-              {isFollowing ? "Unfollow" : "Follow"}
-            </button>
-          )}
-
-          {session?.user.id === parseInt(ID) && (
-            <button className="bg-secondary text-primary px-12 py-2 rounded-full">
-              Edit Profile
-            </button>
-          )}
-        </div>
-        <div className="pl-4">
-          <h1 className="text-2xl font-bold mt-4">{user.username}</h1>
-          <h1 className="text-md">@{user.username}</h1>
-
-          <p className="text-md mt-4">Software Engineer</p>
-          <p className="text-xs font-medium flex items-center gap-1 mt-4">
-            <FaCalendarAlt />
-            Joined on {formatDate(user.CreatedAt ?? "")}
-          </p>
-        </div>
-        <div className="flex gap-4 mt-2 pb-6 pl-4 ">
-          <p>
-            <span className="font-bold">
-              {user.following == undefined ? 0 : user.following.length}
-            </span>{" "}
-            following
-          </p>
-          <p>
-            <span className="font-bold">
-              {user.followers == undefined ? 0 : user.followers.length}
-            </span>{" "}
-            followers
-          </p>
-        </div>
-        <div className="border-b-[1px] border-black flex gap-8 pl-4 pb-2">
-          {currentTab === "posts" ? (
-            <p className="text-lg font-bold">Posts</p>
-          ) : (
-            <p
-              className="text-lg hover:cursor-pointer"
-              onClick={() => {
-                getPosts();
-                setCurrentTab("posts");
-              }}
-            >
-              Posts
-            </p>
-          )}
-
-          {currentTab === "likes" ? (
-            <p className="text-lg font-bold">Likes</p>
-          ) : (
-            <p
-              className="text-lg hover:cursor-pointer"
-              onClick={() => {
-                getLikedPosts();
-                setCurrentTab("likes");
-              }}
-            >
-              Likes
-            </p>
-          )}
-        </div>
-        <div>
-          {currentTab === "posts" &&
-            posts.map((post, index) => (
-              <Post
-                key={index}
-                ID={post.ID}
-                CreatedAt={post.CreatedAt}
-                content={post.content}
-                location={post.location}
-                pictureURL={post.pictureURL}
-                likes={post.likes}
-                userID={post.userID}
-                User={post.User}
-                uniqueViewers={post.uniqueViewers}
-                numComments={post.numComments}
-              />
-            ))}
-
-          {likedPosts &&
-            currentTab === "likes" &&
-            likedPosts.map((post, index) => (
-              <Post
-                key={index}
-                ID={post.ID}
-                CreatedAt={post.CreatedAt}
-                content={post.content}
-                location={post.location}
-                pictureURL={post.pictureURL}
-                likes={post.likes}
-                userID={post.userID}
-                User={post.User}
-                uniqueViewers={post.uniqueViewers}
-                numComments={post.numComments}
-              />
-            ))}
-        </div>
-      </div>
-    </main>
+            />
+            <div className="p-6">
+              <h1 className="uppercase font-bold text-sm pt-2">
+                Create a new comment
+              </h1>
+              <form>
+                <input
+                  type="text"
+                  className="border-[1px] border-black w-full p-2 resize-none rounded mb-2"
+                  placeholder="Enter new username..."
+                  onChange={onUsernameChange}
+                  defaultValue={user.username}
+                />
+                <textarea
+                  name=""
+                  id=""
+                  className="border-[1px] border-black w-full h-[45vh] p-2 resize-none rounded"
+                  placeholder="Enter new bio..."
+                  onChange={onBioChange}
+                  defaultValue={user.bio}
+                ></textarea>
+                <div className="flex items-center justify-between pt-4">
+                  <input
+                    type="file"
+                    name="image"
+                    accept=".png, .jpg, .jpeg"
+                    onChange={onProfilePictureChange}
+                  />
+                  <button
+                    className="bg-secondary text-primary px-8 py-2 font-medium rounded-sm shadow-md"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      updateProfile();
+                    }}
+                    type="submit"
+                  >
+                    Update
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }

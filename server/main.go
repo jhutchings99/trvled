@@ -36,6 +36,7 @@ func main() {
 
 		users.GET("/:userId", controllers.GetUser)
 		users.PATCH("/:userId/:location/:locationId", middleware.RequireAuth, controllers.VisitNewLocation)
+		users.PATCH("/:userId", middleware.RequireAuth, controllers.UpdateUser)
 
 		users.GET("/:userId/posts/", controllers.GetUserPosts)
 		users.GET("/:userId/posts/liked", controllers.GetUserLikedPosts)
