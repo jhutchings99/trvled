@@ -41,7 +41,7 @@ export default function Navbar() {
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           setUser(data);
         });
       });
@@ -71,7 +71,7 @@ export default function Navbar() {
   }
 
   function createPost() {
-    console.log(backendUrl);
+    // console.log(backendUrl);
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/posts/`, {
         method: "POST",
@@ -81,7 +81,7 @@ export default function Navbar() {
         body: createFormData(),
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          // console.log(data);
           setIsCreatingPost(false);
         });
       });
