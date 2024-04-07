@@ -31,6 +31,10 @@ export default function CountryPage({ params }: { params: Params }) {
   const countryName = countryIdToName[String(params.countryId)];
   const { data: session, update } = useSession();
 
+  if (!session?.user) {
+    router.push("/");
+  }
+
   useEffect(() => {
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/memories/${params.countryId}`, {

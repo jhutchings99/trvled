@@ -74,6 +74,10 @@ export default function ProfilePage({
   const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
   const router = useRouter();
 
+  if (!session?.user) {
+    router.push("/");
+  }
+
   useEffect(() => {
     getUser();
     checkIfFollowing();

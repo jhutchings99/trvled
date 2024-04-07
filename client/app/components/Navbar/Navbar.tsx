@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Logo from "../../../public/logo.svg";
-import ProfilePic from "../../../public/temp-fake-profile-img.jpg";
 import Image from "next/image";
 import {
   MdMap,
@@ -13,8 +12,9 @@ import {
 } from "react-icons/md";
 import { IoIosClose } from "react-icons/io";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { FaUser } from "react-icons/fa";
 
 interface User {
   username: string;
@@ -118,10 +118,15 @@ export default function Navbar() {
               </Link>
             </div>
             <div className="flex items-center gap-2">
-              <MdOutlineListAlt className="h-10 w-10" />
-              <Link className="font-medium text-2xl" href={"/planner"}>
-                Planner
-              </Link>
+              <FaUser className="h-10 w-10" />
+              <a
+                className="font-medium text-2xl hover:cursor-pointer"
+                onClick={() => {
+                  router.push(`/profile/${session?.user.id}`);
+                }}
+              >
+                Profile
+              </a>
             </div>
             <button
               className="bg-secondary text-primary py-3 px-20 rounded-full font-bold"
@@ -136,7 +141,8 @@ export default function Navbar() {
         <a
           className="w-64"
           onClick={() => {
-            router.push(`/profile/${session?.user.id}`);
+            signOut();
+            router.push("/");
           }}
         >
           <div className="flex justify-between px-6 py-2 rounded-full items-center hover:bg-slate-200">

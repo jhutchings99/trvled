@@ -84,6 +84,10 @@ export default function PostPage({
   const [commentId, setCommentId] = useState("");
   const router = useRouter();
 
+  if (!session?.user) {
+    router.push("/");
+  }
+
   useEffect(() => {
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/comments/${ID}`, {

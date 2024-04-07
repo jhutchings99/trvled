@@ -15,6 +15,7 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+        console.log("Credentials", credentials);
         // Add logic here to look up the user from the credentials supplied
         const res = await fetch("http://localhost:8080/users/login", {
           method: "POST",
@@ -27,10 +28,11 @@ const handler = NextAuth({
           }),
         });
         const user = await res.json();
+        console.log("User", user);
 
-        if (user) {
+        if (user?.id) {
           // Any object returned will be saved in `user` property of the JWT
-          console.log("User found", user);
+          // console.log("User found", user);
           return user;
         } else {
           // If you return null then an error will be displayed advising the user to check their details.
@@ -51,12 +53,12 @@ const handler = NextAuth({
           `http://localhost:8080/users/${token.id}`
         );
         const backendData = await backendResponse.json();
-        console.log("RES", backendData);
+        // console.log("RES", backendData);
 
         return { ...token, ...backendData };
       }
 
-      console.log("JWT", token, user, session, trigger);
+      // console.log("JWT", token, user, session, trigger);
 
       return { ...token, ...user };
     },

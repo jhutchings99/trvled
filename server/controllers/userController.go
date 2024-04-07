@@ -81,9 +81,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("Email: ", body.Email, " Password: ", body.Password)
+
 	// get user from database with email
 	var user models.User
 	initializers.DB.First(&user, "email = ?", body.Email)
+
+	fmt.Println("User: ", user)
 
 	if user.ID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{

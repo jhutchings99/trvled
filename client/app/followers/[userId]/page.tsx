@@ -72,6 +72,10 @@ export default function ProfilePage({
   const { data: session, update } = useSession();
   const router = useRouter();
 
+  if (!session?.user) {
+    router.push("/");
+  }
+
   useEffect(() => {
     getUser();
     getFollowers();

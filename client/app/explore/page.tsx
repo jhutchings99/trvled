@@ -35,6 +35,10 @@ export default function ExplorePage() {
   const { data: session, update } = useSession();
   const router = useRouter();
 
+  if (!session?.user) {
+    router.push("/");
+  }
+
   useEffect(() => {
     getPosts();
   }, [backendUrl, session?.user.accessToken]);
