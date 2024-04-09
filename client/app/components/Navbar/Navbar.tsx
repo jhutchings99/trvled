@@ -24,6 +24,7 @@ interface User {
 
 export default function Navbar() {
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostLocation, setNewPostLocation] = useState("");
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
@@ -90,7 +91,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="min-w-[20vw] max-w-[20vw] h-screen flex flex-col justify-between py-12 px-4 border-r-[1px] border-l-[1px] border-black">
+      <div className="w-[20vw] h-screen flex flex-col justify-between py-12 px-4 border-r-[1px] border-l-[1px] border-black">
         <div>
           <div className="flex items-center gap-2">
             <Image src={Logo} alt="trvled logo" className="w-9" />
@@ -138,38 +139,54 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-        <a
-          className="w-64"
-          onClick={() => {
-            signOut();
-            router.push("/");
-          }}
-        >
-          <div className="flex justify-between px-6 py-2 rounded-full items-center hover:bg-slate-200">
-            <div className="flex gap-2">
-              {user.profilePicture && (
-                <Image
-                  src={user.profilePicture ?? ""}
-                  alt="Profile Picture"
-                  width={200}
-                  height={200}
-                  className="rounded-full h-12 w-12"
-                />
-              )}
-              {!user.profilePicture && (
-                <p className="rounded-full h-12 w-12 bg-gray-200 flex items-center justify-center">
-                  ?
-                </p>
-              )}
-              <div>
-                <p>{user.username}</p>
-                <p>@{user.username}</p>
+        <div className="w-full">
+          {isLoggingOut && (
+            <p
+              className="mx-auto bg-gray-200 flex justify-center items-center py-4 rounded-md hover:bg-gray-300 hover:cursor-pointer mb-2"
+              onClick={() => {
+                signOut();
+                router.push("/");
+              }}
+            >
+              Log out <span className="font-medium pl-2">@{user.username}</span>
+            </p>
+          )}
+          <a
+            onClick={() => {
+              setIsLoggingOut(!isLoggingOut);
+            }}
+          >
+            <div
+              className={`flex justify-between items-center hover:bg-gray-200 hover:cursor-pointer p-4 rounded-full ${
+                isLoggingOut ? "bg-gray-200" : "bg-white"
+              }`}
+            >
+              <div className="flex gap-2">
+                {user.profilePicture && (
+                  <Image
+                    src={user.profilePicture ?? ""}
+                    alt="Profile Picture"
+                    width={200}
+                    height={200}
+                    className="rounded-full h-12 w-12"
+                  />
+                )}
+                {!user.profilePicture && (
+                  <p className="rounded-full h-12 w-12 bg-gray-200 flex items-center justify-center">
+                    ?
+                  </p>
+                )}
+                <div>
+                  <p>{user.username}</p>
+                  <p>@{user.username}</p>
+                </div>
               </div>
+              <MdWorkspaces className="h-4 w-4" />
             </div>
-            <MdWorkspaces className="h-4 w-4" />
-          </div>
-        </a>
+          </a>
+        </div>
       </div>
+
       {/* CREATE POST POPUP */}
       {isCreatingPost && (
         <>

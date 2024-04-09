@@ -9,6 +9,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 import Post from "../../components/SocialFeed/Post";
 import { IoIosClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import WhoToFollow from "@/app/components/WhoToFollow/WhoToFollow";
 
 interface Post {
   ID: string;
@@ -202,9 +203,9 @@ export default function ProfilePage({
 
   return (
     <>
-      <main className="flex px-52">
+      <main className="flex justify-center">
         <Navbar />
-        <div className="flex flex-col border-r-[1px] border-black w-[40vw]">
+        <div className="flex flex-col border-r-[1px] border-black w-[35vw]">
           <div className="flex gap-8 items-center pl-4">
             <IoIosArrowRoundBack
               className="h-10 w-10 hover:cursor-pointer"
@@ -353,6 +354,7 @@ export default function ProfilePage({
               ))}
           </div>
         </div>
+        <WhoToFollow />
       </main>
 
       {/* UPDATE USER POPUP */}

@@ -622,6 +622,68 @@ func GetFollowing(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+func GetNotFollowing(c *gin.Context) {
+	userId := c.Param("userId")
+
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, userId)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find user",
+		})
+
+		return
+	}
+
+	// get all users
+	var users []models.User
+	result = initializers.DB.Find(&users)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to find users",
+		})
+
+		return
+	}
+
+	// convert following array of strings to array of uints for query
+	var following []uint
+	for _, id := range user.Following {
+		// Convert id from string to uint
+		convertedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "failed to convert id",
+			})
+			return
+		}
+		following = append(following, uint(convertedID))
+	}
+
+	// get users not in following
+	var notFollowing []models.User
+	for _, u := range users {
+		found := false
+		for _, id := range following {
+			if u.ID == id {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			notFollowing = append(notFollowing, u)
+		}
+	}
+
+	// respond
+	c.JSON(http.StatusOK, notFollowing)
+
+}
+
 func GetFollowingPosts(c *gin.Context) {
 	userId := c.Param("userId")
 

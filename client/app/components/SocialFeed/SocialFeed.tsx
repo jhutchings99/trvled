@@ -60,7 +60,7 @@ export default function SocialFeed() {
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log("Following", data);
+          //console.log("Following", data);
           setPosts(data);
         });
       });
@@ -68,7 +68,7 @@ export default function SocialFeed() {
   }
 
   return (
-    <main className="border-r-[1px] border-black w-[40vw] h-screen overflow-y-scroll">
+    <main className="border-r-[1px] border-black w-[35vw] h-screen overflow-y-scroll no-scrollbar">
       <div className="flex gap-8 items-center">
         <div className="flex justify-around pt-4 border-b-[1px] border-black w-full">
           {currentTab === "forYou" && (

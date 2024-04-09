@@ -56,8 +56,8 @@ export default function Map() {
   return (
     // <div className="w-full h-[92vh] flex flex-col justify-center items-center">
     // <h3>{tooltipContent}</h3>
-    <div className="w-full  overflow-hidden relative border-r-[1px] border-black">
-      <ComposableMap projection="geoMercator" className="h-screen w-full">
+    <div className="w-[55vw]  overflow-hidden relative border-r-[1px] border-black">
+      <ComposableMap projection="geoMercator" className="h-screen w-[55vw]">
         <ZoomableGroup
           zoom={position.zoom}
           center={position.coordinates}

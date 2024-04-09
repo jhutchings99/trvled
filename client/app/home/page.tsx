@@ -5,6 +5,7 @@ import SocialFeed from "../components/SocialFeed/SocialFeed";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
+import WhoToFollow from "../components/WhoToFollow/WhoToFollow";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -17,9 +18,10 @@ export default function Home() {
   });
 
   return (
-    <main className="flex px-52">
+    <main className="flex justify-center">
       <Navbar />
       <SocialFeed />
+      <WhoToFollow />
     </main>
   );
 }

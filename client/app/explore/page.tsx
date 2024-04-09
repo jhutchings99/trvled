@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Post from "../components/SocialFeed/Post";
 import { FaSearch } from "react-icons/fa";
+import WhoToFollow from "../components/WhoToFollow/WhoToFollow";
 
 interface User {
   username: string;
@@ -69,9 +70,9 @@ export default function ExplorePage() {
   }
 
   return (
-    <main className="flex px-52">
+    <main className="flex justify-center">
       <Navbar />
-      <div className="border-r-[1px] border-black w-[40vw] h-screen overflow-y-scroll">
+      <div className="border-r-[1px] border-black w-[35vw] h-screen overflow-y-scroll no-scrollbar">
         {/* SEARCH BAR */}
         <div className="flex items-center justify-between border-b-[1px] border-black p-4">
           <FaSearch className="text-lg mr-2 text-primary" />
@@ -98,6 +99,7 @@ export default function ExplorePage() {
           />
         ))}
       </div>
+      <WhoToFollow />
     </main>
   );
 }

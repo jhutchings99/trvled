@@ -46,6 +46,7 @@ func main() {
 
 		users.GET("/:userId/followers", controllers.GetFollowers)
 		users.GET("/:userId/following", controllers.GetFollowing)
+		users.GET("/:userId/notFollowing", controllers.GetNotFollowing)
 
 		users.GET("/:userId/following/posts", controllers.GetFollowingPosts)
 	}

@@ -12,7 +12,7 @@ export default function CreatePostForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log("Session before submitting:", session?.user.accessToken);
+    //console.log("Session before submitting:", session?.user.accessToken);
 
     const response = await fetch("http://localhost:8080/posts/", {
       method: "POST",
@@ -27,9 +27,9 @@ export default function CreatePostForm() {
     });
 
     if (response.ok) {
-      console.log("Post created successfully");
+      //console.log("Post created successfully");
     } else {
-      console.error("Failed to create post");
+      //console.error("Failed to create post");
     }
   };
 

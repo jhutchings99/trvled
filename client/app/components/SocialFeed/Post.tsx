@@ -63,7 +63,7 @@ export default function Post({
   uniqueViewers,
   numComments,
 }: Post) {
-  console.log("USER", User);
+  //console.log("USER", User);
   const [localLikes, setLocalLikes] = useState(likes);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
@@ -93,7 +93,7 @@ export default function Post({
   }
 
   function createComment() {
-    console.log(backendUrl);
+    //console.log(backendUrl);
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/posts/${ID}/comment`, {
         method: "POST",
@@ -103,7 +103,7 @@ export default function Post({
         body: createFormData(),
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          //console.log(data);
           setIsCreatingComment(false);
           setNumberComments(numberComments + 1);
         });
@@ -120,7 +120,7 @@ export default function Post({
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          //console.log(data);
           //   update the post to reflect the new likes
           setLocalLikes(data.likes);
         });

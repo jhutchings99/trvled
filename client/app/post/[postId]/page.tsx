@@ -11,6 +11,7 @@ import Navbar from "@/app/components/Navbar/Navbar";
 import { IoIosClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import WhoToFollow from "@/app/components/WhoToFollow/WhoToFollow";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -251,9 +252,9 @@ export default function PostPage({ params }: { params: { postId: string } }) {
   }
 
   return (
-    <div className="flex px-52">
+    <div className="flex justify-center">
       <Navbar />
-      <main className="h-full w-[40vw]">
+      <main className="h-full w-[35vw]">
         <div className="flex gap-8 items-center pl-4">
           <IoIosArrowRoundBack
             className="h-10 w-10 hover:cursor-pointer"
@@ -460,6 +461,7 @@ export default function PostPage({ params }: { params: { postId: string } }) {
         </div>
       </main>
       <div className="border-l-[1px] border-black"></div>
+      <WhoToFollow />
 
       {/* CREATE COMMENT POPUP */}
       {isCreatingPostComment && (

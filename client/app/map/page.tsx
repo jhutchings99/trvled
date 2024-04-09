@@ -17,7 +17,7 @@ export default function MapPage() {
   });
 
   return (
-    <main className="flex px-52">
+    <main className="flex justify-center">
       <Navbar />
       <Map />
     </main>

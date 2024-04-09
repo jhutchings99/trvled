@@ -23,8 +23,8 @@ export default function LoginForm() {
 
   // login user using next auth
   const loginUser = async () => {
-    console.log("Email before submitting:", email);
-    console.log("Password before submitting:", password);
+    //console.log("Email before submitting:", email);
+    //console.log("Password before submitting:", password);
 
     const result = await signIn("credentials", {
       redirect: false, // Handle success/failure in the component

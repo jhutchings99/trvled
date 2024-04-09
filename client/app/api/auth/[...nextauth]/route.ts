@@ -15,8 +15,9 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        console.log("Credentials", credentials);
+        //console.log("Credentials", credentials);
         // Add logic here to look up the user from the credentials supplied
+        //const res = await fetch("http://localhost:8080/users/login", {
         const res = await fetch("https://trveld.onrender.com/users/login", {
           method: "POST",
           headers: {
@@ -28,7 +29,7 @@ const handler = NextAuth({
           }),
         });
         const user = await res.json();
-        console.log("User", user);
+        //console.log("User", user);
 
         if (user?.id) {
           // Any object returned will be saved in `user` property of the JWT

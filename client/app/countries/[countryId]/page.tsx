@@ -8,6 +8,7 @@ import Memory from "@/app/components/Memory/Memory";
 import { IoIosClose } from "react-icons/io";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import WhoToFollow from "@/app/components/WhoToFollow/WhoToFollow";
 
 interface Params {
   countryId: number;
@@ -16,7 +17,7 @@ interface Params {
 
 interface Memory {
   id: number;
-  createdAt: Date;
+  CreatedAt: string;
   imageUrl: string;
   note: string;
 }
@@ -31,11 +32,11 @@ export default function CountryPage({ params }: { params: Params }) {
   const countryName = countryIdToName[String(params.countryId)];
   const { data: session, update } = useSession();
 
-  if (!session?.user) {
-    router.push("/");
-  }
-
   useEffect(() => {
+    if (!session?.user) {
+      router.push("/");
+    }
+
     if (session?.user.accessToken) {
       fetch(`${backendUrl}/memories/${params.countryId}`, {
         method: "GET",
@@ -44,7 +45,7 @@ export default function CountryPage({ params }: { params: Params }) {
         },
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          //console.log(data);
           setMemories(data);
         });
       });
@@ -85,7 +86,7 @@ export default function CountryPage({ params }: { params: Params }) {
         body: createFormData(),
       }).then((res) => {
         res.json().then((data) => {
-          console.log(data);
+          //console.log(data);
           setMemories([...memories, data]);
         });
       });
@@ -104,15 +105,15 @@ export default function CountryPage({ params }: { params: Params }) {
         }
       ).then((res) => {
         res.json().then((data) => {
-          console.log("Backend update response:", data); // Did the backend update succeed?
+          //console.log("Backend update response:", data); // Did the backend update succeed?
 
           // Log the session before the update
-          console.log("Session before update:", session);
+          //console.log("Session before update:", session);
 
           update();
 
           // Log the session after the update
-          console.log("Session after update:", session);
+          //console.log("Session after update:", session);
         });
       });
       // ).then((res) => {
@@ -125,9 +126,9 @@ export default function CountryPage({ params }: { params: Params }) {
   }
 
   return (
-    <main className="flex px-52">
+    <main className="flex justify-center">
       <Navbar />
-      <div className="flex flex-col w-full border-r-[1px] border-black px-4">
+      <div className="flex flex-col w-[35vw] border-r-[1px] border-black overflow-y-scroll max-h-[100vh] no-scrollbar">
         <div className="flex gap-2 items-center">
           <IoIosArrowRoundBack
             className="h-10 w-10 hover:cursor-pointer"
@@ -137,7 +138,7 @@ export default function CountryPage({ params }: { params: Params }) {
           />
           <h1 className="text-xl font-bold">Back</h1>
         </div>
-        <div className="flex items-center justify-around pb-1 h-24">
+        <div className="flex items-center justify-around h-24  w-full">
           <div className="flex items-center gap-2">
             <p className="text-md uppercase font-medium">Visited</p>
             <input
@@ -153,13 +154,14 @@ export default function CountryPage({ params }: { params: Params }) {
               onChange={visitUnvisitCountry}
             />
           </div>
-          <h1 className="text-4xl font-bold mb-4 text-center pt-12 pb-6">
+          <h1 className="text-2xl font-bold mb-4 text-center pt-12 pb-6">
             {countryName}
           </h1>
           <button
             onClick={() => {
               setIsCreatingMemory(true);
             }}
+            className="font-bold bg-secondary text-primary rounded-full py-2 px-4"
           >
             Create Memory
           </button>
@@ -210,7 +212,7 @@ export default function CountryPage({ params }: { params: Params }) {
                     className="bg-secondary text-primary px-8 py-2 font-medium rounded-sm shadow-md"
                     onClick={(e) => {
                       e.preventDefault();
-                      console.log(newMemoryContent, newMemoryImage);
+                      //console.log(newMemoryContent, newMemoryImage);
                       createMemory();
                     }}
                     type="submit"
@@ -223,6 +225,7 @@ export default function CountryPage({ params }: { params: Params }) {
           </div>
         </>
       )}
+      <WhoToFollow />
     </main>
   );
 }
