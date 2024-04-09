@@ -33,7 +33,7 @@ export default function LoginForm() {
     });
 
     if (result?.error) {
-      router.push("/login");
+      router.push("/");
     } else {
       router.push("/home");
     }
