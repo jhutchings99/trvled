@@ -80,10 +80,7 @@ export default function RegisterPage() {
 
         {/* SUBMIT */}
         <div className="flex flex-col pl-8 pt-12">
-          <Link
-            href="/login"
-            className="pb-2 hover:underline hover:cursor-pointer"
-          >
+          <Link href="/" className="pb-2 hover:underline hover:cursor-pointer">
             Already have an account? Login here
           </Link>
           <button
