@@ -22,7 +22,7 @@ func main() {
 	router.MaxMultipartMemory = 12 << 20 // 8 MiB
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://trveld.onrender.com"},
+		AllowOrigins:     []string{"http://localhost:3000", "https://www.trveld.com/"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:     []string{"Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
