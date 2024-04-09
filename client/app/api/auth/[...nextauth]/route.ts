@@ -51,7 +51,8 @@ const handler = NextAuth({
     async jwt({ token, user, session, trigger }) {
       if (trigger === "update") {
         const backendResponse = await fetch(
-          `http://localhost:8080/users/${token.id}`
+          //`http://localhost:8080/users/${token.id}`
+          `https://trveld.onrender.com/${token.id}`
         );
         const backendData = await backendResponse.json();
         // console.log("RES", backendData);
