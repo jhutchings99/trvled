@@ -17,7 +17,7 @@ const handler = NextAuth({
       async authorize(credentials, req) {
         console.log("Credentials", credentials);
         // Add logic here to look up the user from the credentials supplied
-        const res = await fetch("http://localhost:8080/users/login", {
+        const res = await fetch("https://trveld.onrender.com/users/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
