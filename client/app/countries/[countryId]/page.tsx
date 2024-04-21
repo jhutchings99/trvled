@@ -87,6 +87,7 @@ export default function CountryPage({ params }: { params: Params }) {
       }).then((res) => {
         res.json().then((data) => {
           //console.log(data);
+          setIsCreatingMemory(false);
           setMemories([...memories, data]);
         });
       });

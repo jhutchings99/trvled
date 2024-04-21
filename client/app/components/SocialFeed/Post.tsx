@@ -174,14 +174,14 @@ export default function Post({
                   <LuDot className="w-4 h-4" />
                   <p className="text-sm">{formatDate(CreatedAt)}</p>
                 </div>
-                <p>{content}</p>
                 <p>{location}</p>
+                <p>{content}</p>
                 {pictureURL != "" && (
                   <Image
                     src={pictureURL}
                     alt="post image"
-                    height={200}
-                    width={200}
+                    height={400}
+                    width={400}
                   />
                 )}
               </div>

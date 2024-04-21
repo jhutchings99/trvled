@@ -34,7 +34,17 @@ export default function SocialFeed() {
 
   useEffect(() => {
     getPosts();
+
+    document.addEventListener("newPostCreated", handleNewPost);
+
+    return () => {
+      document.removeEventListener("newPostCreated", handleNewPost);
+    };
   }, [backendUrl, session?.user.accessToken]);
+
+  function handleNewPost() {
+    getPosts();
+  }
 
   function getPosts() {
     if (session?.user.accessToken) {

@@ -77,7 +77,7 @@ export default function Map() {
                   //   setTooltipContent("Not hovering");
                   // }}
                   onClick={() => {
-                    console.log(geo);
+                    //console.log(geo);
                     router.push(`/countries/${geo.id}`);
                   }}
                   className={`hover:fill-hover stroke-black outline-none ${

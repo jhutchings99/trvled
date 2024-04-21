@@ -84,6 +84,8 @@ export default function Navbar() {
         res.json().then((data) => {
           // console.log(data);
           setIsCreatingPost(false);
+          const event = new Event("newPostCreated");
+          document.dispatchEvent(event);
         });
       });
     }

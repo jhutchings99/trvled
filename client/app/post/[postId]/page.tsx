@@ -292,8 +292,8 @@ export default function PostPage({ params }: { params: { postId: string } }) {
                   <LuDot className="w-4 h-4" />
                   <p className="text-sm">{formatDate(post?.CreatedAt ?? "")}</p>
                 </div>
-                <p>{post?.content}</p>
                 <p>{post?.location}</p>
+                <p>{post?.content}</p>
                 {post?.pictureURL != "" && (
                   <Image
                     src={post?.pictureURL ?? ""}
