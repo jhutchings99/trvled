@@ -15,19 +15,12 @@ import { useSession } from "next-auth/react";
 export default function Map() {
   const router = useRouter();
   let { data: session } = useSession();
-
-  const [tooltipContent, setTooltipContent] = useState("Not hovering");
   const [position, setPosition] = useState({
     coordinates: [0, 0] as [number, number],
     zoom: 1,
   });
 
-  // country ids for testing
-  // TODO: when users is created, get signed in users visitedCountries list
-  const visitedCountries: string[] = ["840", "398", "834", "242"];
-
   const setVisitedCountries = (visitedCountries: string[]) => {
-    if (!visitedCountries) return;
     if (!session?.user.globalVisited) return;
 
     session?.user.globalVisited.forEach((visitedId) => {
@@ -51,11 +44,7 @@ export default function Map() {
     setPosition(centerPosition);
   };
 
-  setVisitedCountries(visitedCountries);
-
   return (
-    // <div className="w-full h-[92vh] flex flex-col justify-center items-center">
-    // <h3>{tooltipContent}</h3>
     <div className="w-[55vw]  overflow-hidden relative border-r-[1px] border-black">
       <ComposableMap projection="geoMercator" className="h-screen w-[55vw]">
         <ZoomableGroup
@@ -69,15 +58,7 @@ export default function Map() {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  // onMouseEnter={() => {
-                  //   const { name } = geo.properties;
-                  //   setTooltipContent(`${name}`);
-                  // }}
-                  // onMouseLeave={() => {
-                  //   setTooltipContent("Not hovering");
-                  // }}
                   onClick={() => {
-                    //console.log(geo);
                     router.push(`/countries/${geo.id}`);
                   }}
                   className={`hover:fill-hover stroke-black outline-none ${
@@ -95,6 +76,5 @@ export default function Map() {
         onClick={centerMap}
       />
     </div>
-    // </div>
   );
 }
