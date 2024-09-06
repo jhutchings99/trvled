@@ -51,10 +51,6 @@ export default function LoginForm() {
 
   return (
     <main className="h-[70vh] w-[30vw] mx-auto mt-24 shadow-xl">
-      <h1 className="p-4">
-        *WARNING* May take up to 3 minutes for backend server to start on
-        request
-      </h1>
       <div>
         {/* HEADER */}
 
