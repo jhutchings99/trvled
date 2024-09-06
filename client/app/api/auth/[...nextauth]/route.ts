@@ -18,16 +18,19 @@ const handler = NextAuth({
         //console.log("Credentials", credentials);
         // Add logic here to look up the user from the credentials supplied
         //const res = await fetch("http://localhost:8080/users/login", {
-        const res = await fetch("https://trveld.onrender.com/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: credentials?.email,
-            password: credentials?.password,
-          }),
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials?.email,
+              password: credentials?.password,
+            }),
+          }
+        );
         const user = await res.json();
         //console.log("User", user);
 
@@ -52,7 +55,7 @@ const handler = NextAuth({
       if (trigger === "update") {
         const backendResponse = await fetch(
           // `http://localhost:8080/users/${token.id}`
-          `https://trveld.onrender.com/users/${token.id}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${token.id}`
         );
         const backendData = await backendResponse.json();
         // console.log("RES", backendData);
